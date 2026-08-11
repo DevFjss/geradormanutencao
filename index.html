@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Gerador Manutenção</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        :root {
+            --sidebar-width: 280px;
+            --sidebar-bg: #f0f7f0;
+            --sidebar-header: #2e7d32;
+            --primary: #1b5e20;
+            --primary-light: #43a047;
+            --bg-body: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-dark: #1a1a2e;
+            --text-muted: #6c757d;
+            --border-color: #e0e5e9;
+            --shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+        }
+
+        body {
+            display: flex;
+            height: 100vh;
+            background: var(--bg-body);
+            color: var(--text-dark);
+            overflow: hidden;
+        }
+
+        /* ===== SIDEBAR ===== */
+        aside {
+            width: var(--sidebar-width);
+            min-width: var(--sidebar-width);
+            background: var(--sidebar-bg);
+            border-right: 1px solid #c8e6c9;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 18px;
+            overflow-y: auto;
+            z-index: 10;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            flex-shrink: 0;
+            height: 100vh;
+        }
+
+        aside.collapsed {
+            width: 0;
+            min-width: 0;
+            padding: 0;
+            margin: 0;
+            overflow: hidden;
+            border: none;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        aside:not(.collapsed) {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: var(--sidebar-header);
+            margin-bottom: 24px;
+            padding-bottom: 14px;
+            border-bottom: 2px solid #a5d6a7;
+            flex-shrink: 0;
+        }
+
+        .sidebar-header h2 {
+            font-size: 1rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-header h2 i {
+            font-size: 1.2rem;
+        }
+
+        .btn-toggle-sidebar {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(27, 94, 32, 0.25);
+            flex-shrink: 0;
+        }
+
+        .btn-toggle-sidebar:hover {
+            background: #1b5e20;
+            transform: scale(1.05);
+        }
+
+        .filter-group {
+            margin-bottom: 16px;
+            flex-shrink: 0;
+        }
+
+        .filter-group label {
+            display: block;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .filter-group select,
+        .filter-group input {
+            width: 100%;
+            padding: 9px 12px;
+            border: 1px solid #c8e6c9;
+            border-radius: 8px;
+            background: #fff;
+            font-size: 0.85rem;
+            color: var(--text-dark);
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .filter-group select:focus,
+        .filter-group input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.15);
+        }
+
+        .btn-reset {
+            width: 100%;
+            padding: 10px;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 6px;
+            flex-shrink: 0;
+            font-size: 0.85rem;
+        }
+
+        .btn-reset:hover {
+            background: #1b5e20;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(27, 94, 32, 0.25);
+        }
+
+        /* Botão expandir (flutuante) */
+        .btn-expand-sidebar {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            z-index: 99;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 16px rgba(27, 94, 32, 0.3);
+            transition: all 0.2s;
+            font-size: 1.2rem;
+        }
+
+        .btn-expand-sidebar:hover {
+            background: #1b5e20;
+            transform: scale(1.05);
+        }
+
+        .btn-expand-sidebar.visible {
+            display: flex;
+        }
+
+        /* ===== MAIN ===== */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            min-width: 0;
+        }
+
+        header {
+            background: #fff;
+            padding: 14px 28px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        header h1 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        header h1 i {
+            color: var(--primary);
+        }
+
+        .sheet-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            background: #f0f4f1;
+            padding: 4px 14px;
+            border-radius: 20px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #4caf50;
+            border-radius: 50%;
+        }
+
+        .content-body {
+            padding: 18px 24px;
+            overflow-y: auto;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* ===== CAIXAS DE PESQUISA ===== */
+        .search-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            flex-shrink: 0;
+        }
+
+        .search-card {
+            background: #fff;
+            padding: 14px 18px;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+
+        .search-card h3 {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .search-card h3 i {
+            color: var(--primary);
+        }
+
+        .search-input-wrapper {
+            position: relative;
+        }
+
+        .search-input-wrapper input {
+            width: 100%;
+            padding: 8px 12px 8px 36px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.85rem;
+            outline: none;
+            transition: all 0.2s;
+            background: #fafbfc;
+        }
+
+        .search-input-wrapper input:focus {
+            border-color: var(--primary);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+        }
+
+        .search-input-wrapper i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* ===== CARDS RESUMO ===== */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            flex-shrink: 0;
+        }
+
+        .metric-card {
+            background: #fff;
+            padding: 12px 18px;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+
+        .metric-card .title {
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .metric-card .value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-top: 2px;
+        }
+
+        /* ===== CONTROLES ===== */
+        .controls-bar {
+            background: #fff;
+            padding: 10px 18px;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .column-toggle-wrapper {
+            position: relative;
+        }
+
+        .btn-toggle-cols {
+            background: #f8f9fa;
+            border: 1px solid var(--border-color);
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-weight: 600;
+            color: var(--text-dark);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+
+        .btn-toggle-cols:hover {
+            background: #e8f5e9;
+            border-color: var(--primary);
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 110%;
+            left: 0;
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+            width: 280px;
+            max-height: 320px;
+            overflow-y: auto;
+            padding: 12px 14px;
+            z-index: 100;
+        }
+
+        .dropdown-menu.show {
+            display: block;
+        }
+
+        .dropdown-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 8px;
+            margin-bottom: 8px;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 4px 6px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            cursor: pointer;
+        }
+
+        .checkbox-item:hover {
+            background: #f0f4f1;
+        }
+
+        .checkbox-item input {
+            accent-color: var(--primary);
+        }
+
+        .records-count {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .records-count strong {
+            color: var(--text-dark);
+        }
+
+        /* ===== TABELA ===== */
+        .table-container {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            flex: 1;
+            overflow: auto;
+            min-height: 200px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+
+        thead {
+            position: sticky;
+            top: 0;
+            background: var(--primary);
+            color: #fff;
+            z-index: 5;
+        }
+
+        th {
+            padding: 10px 14px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        td {
+            padding: 8px 14px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        tbody tr:nth-child(even) {
+            background: #f9fbf9;
+        }
+
+        tbody tr:hover {
+            background: #e8f5e9;
+            cursor: default;
+        }
+
+        .loading-spinner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            gap: 12px;
+            color: var(--text-muted);
+        }
+
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid #e0e0e0;
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* ===== RESPONSIVO ===== */
+        @media (max-width: 900px) {
+            .search-grid { grid-template-columns: 1fr; }
+            .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+            header h1 { font-size: 1rem; }
+        }
+
+        @media (max-width: 600px) {
+            .metrics-grid { grid-template-columns: 1fr 1fr; }
+            .content-body { padding: 12px; }
+            header { padding: 10px 16px; }
+            .controls-bar { flex-direction: column; align-items: stretch; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Botão flutuante para reexibir o menu -->
+    <button class="btn-expand-sidebar" id="btn-show-sidebar" onclick="toggleSidebar()" title="Exibir Filtros">
+        <i class="fa-solid fa-angles-right"></i>
+    </button>
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside id="sidebar">
+        <div class="sidebar-header">
+            <h2>
+                <i class="fa-solid fa-sliders-h"></i> Filtros
+            </h2>
+            <button class="btn-toggle-sidebar" onclick="toggleSidebar()" title="Ocultar Menu">
+                <i class="fa-solid fa-angles-left"></i>
+            </button>
+        </div>
+
+        <div class="filter-group">
+            <label><i class="fa-regular fa-circle-dot"></i> NTE</label>
+            <select id="filter-nte">
+                <option value="">Todos os NTEs</option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label><i class="fa-regular fa-building"></i> Município</label>
+            <select id="filter-municipio">
+                <option value="">Todos os Municípios</option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label><i class="fa-regular fa-coins"></i> Tipo de Recurso</label>
+            <select id="filter-tipo-valor">
+                <option value="todos">Todos</option>
+                <option value="custeio">Apenas Custeio</option>
+                <option value="capital">Apenas Capital</option>
+            </select>
+        </div>
+
+        <button class="btn-reset" onclick="resetFilters()">
+            <i class="fa-solid fa-rotate-left"></i> Limpar Filtros
+        </button>
+    </aside>
+
+    <!-- ===== MAIN ===== -->
+    <main>
+        <header>
+            <h1>
+                <i class="fa-solid fa-chart-pie"></i> Painel Gerador Manutenção
+            </h1>
+            <div class="sheet-status">
+                <div class="status-dot"></div>
+                <span>Aba: <strong>Backup_Remessa</strong></span>
+            </div>
+        </header>
+
+        <div class="content-body">
+            
+            <!-- CAIXAS DE PESQUISA -->
+            <div class="search-grid">
+                <div class="search-card">
+                    <h3><i class="fa-solid fa-barcode"></i> Pesquisa por Código SEC (Coluna C)</h3>
+                    <div class="search-input-wrapper">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="search-cod-sec" placeholder="Digite o Código SEC..." oninput="applyFilters()">
+                    </div>
+                </div>
+
+                <div class="search-card">
+                    <h3><i class="fa-solid fa-credit-card"></i> Pesquisa por Nº Cartão (Coluna I)</h3>
+                    <div class="search-input-wrapper">
+                        <i class="fa-regular fa-credit-card"></i>
+                        <input type="text" id="search-cartao" placeholder="Digite o nº do Cartão..." oninput="applyFilters()">
+                    </div>
+                </div>
+            </div>
+
+            <!-- CARDS RESUMO -->
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="title">Total de Registros</div>
+                    <div class="value" id="card-total-registros">0</div>
+                </div>
+                <div class="metric-card">
+                    <div class="title">Total Custeio</div>
+                    <div class="value" id="card-total-custeio">R$ 0,00</div>
+                </div>
+                <div class="metric-card">
+                    <div class="title">Total Capital</div>
+                    <div class="value" id="card-total-capital">R$ 0,00</div>
+                </div>
+                <div class="metric-card">
+                    <div class="title">Soma Geral</div>
+                    <div class="value" id="card-soma-geral">R$ 0,00</div>
+                </div>
+            </div>
+
+            <!-- CONTROLE DE COLUNAS -->
+            <div class="controls-bar">
+                <div class="column-toggle-wrapper">
+                    <button class="btn-toggle-cols" onclick="toggleDropdown()">
+                        <i class="fa-regular fa-columns"></i> Exibir / Ocultar Colunas
+                        <i class="fa-solid fa-chevron-down" style="font-size: 0.6rem;"></i>
+                    </button>
+                    <div class="dropdown-menu" id="column-dropdown">
+                        <div class="dropdown-header">
+                            <span>Selecionar Colunas</span>
+                            <label style="font-size: 0.7rem; cursor: pointer;">
+                                <input type="checkbox" id="select-all-cols" checked onclick="toggleAllColumns(this)">
+                                Todas
+                            </label>
+                        </div>
+                        <div id="checkbox-list"></div>
+                    </div>
+                </div>
+
+                <div class="records-count">
+                    Exibindo <strong id="visible-count">0</strong> de <strong id="total-count">0</strong> linhas
+                </div>
+            </div>
+
+            <!-- TABELA -->
+            <div class="table-container">
+                <div id="loading" class="loading-spinner">
+                    <div class="spinner"></div>
+                    <span>Carregando dados da planilha...</span>
+                </div>
+                <table id="data-table" style="display: none;">
+                    <thead>
+                        <tr id="table-header"></tr>
+                    </thead>
+                    <tbody id="table-body"></tbody>
+                </table>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        // ===== CONFIGURAÇÕES =====
+        const SHEET_ID = '1xd9Wia3bUkIprpFY1AjVK4Zp7bfWg4dZh8EiPxz4so4';
+        const SHEET_NAME = 'Backup_Remessa';
+        const GVIZ_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?sheet=${encodeURIComponent(SHEET_NAME)}&tqx=out:json`;
+
+        let rawData = [];
+        let headers = [];
+        let visibleColumns = [];
+
+        // Índices das colunas (0-based)
+        const IDX_NTE = 0;
+        const IDX_MUNICIPIO = 1;
+        const IDX_COD_SEC = 2;
+        const IDX_CARTAO = 8;
+        const IDX_VALOR_CUSTEIO = 12;
+        const IDX_VALOR_CAPITAL = 13;
+
+        // ===== INICIALIZAÇÃO =====
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchSheetData();
+
+            // Fechar dropdown ao clicar fora
+            document.addEventListener('click', (e) => {
+                const wrapper = document.querySelector('.column-toggle-wrapper');
+                if (wrapper && !wrapper.contains(e.target)) {
+                    document.getElementById('column-dropdown').classList.remove('show');
+                }
+            });
+
+            document.getElementById('filter-nte').addEventListener('change', () => {
+                updateMunicipioDropdown();
+                applyFilters();
+            });
+            document.getElementById('filter-municipio').addEventListener('change', applyFilters);
+            document.getElementById('filter-tipo-valor').addEventListener('change', applyFilters);
+        });
+
+        // ===== TOGGLE SIDEBAR =====
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const btnShow = document.getElementById('btn-show-sidebar');
+            
+            sidebar.classList.toggle('collapsed');
+            
+            if (sidebar.classList.contains('collapsed')) {
+                btnShow.classList.add('visible');
+            } else {
+                btnShow.classList.remove('visible');
+            }
+        }
+
+        // ===== CARREGAR DADOS =====
+        function fetchSheetData() {
+            fetch(GVIZ_URL)
+                .then(res => res.text())
+                .then(data => {
+                    const jsonString = data.substring(47, data.length - 2);
+                    const json = JSON.parse(jsonString);
+
+                    headers = json.table.cols.map((col, idx) => col.label || `Coluna ${idx + 1}`);
+
+                    rawData = json.table.rows.map(row => {
+                        return row.c.map(cell => (cell && cell.v !== null && cell.v !== undefined) ? cell.v : '');
+                    });
+
+                    visibleColumns = new Array(headers.length).fill(true);
+
+                    buildColumnDropdown();
+                    populateNteDropdown();
+                    updateMunicipioDropdown();
+                    renderHeader();
+                    applyFilters();
+
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('data-table').style.display = 'table';
+                })
+                .catch(err => {
+                    console.error('Erro ao carregar os dados:', err);
+                    document.getElementById('loading').innerHTML = `
+                        <i class="fa-solid fa-triangle-exclamation" style="font-size: 2rem; color: #e53935;"></i>
+                        <span>Erro ao carregar dados da planilha.</span>
+                        <button onclick="fetchSheetData()" style="padding: 8px 16px; background: var(--primary); color: #fff; border: none; border-radius: 6px; cursor: pointer;">Tentar novamente</button>
+                    `;
+                });
+        }
+
+        function populateNteDropdown() {
+            const nteSelect = document.getElementById('filter-nte');
+            nteSelect.innerHTML = '<option value="">Todos os NTEs</option>';
+
+            const ntesSet = new Set();
+            rawData.forEach(row => {
+                const val = row[IDX_NTE];
+                if (val !== undefined && val !== '') {
+                    ntesSet.add(val.toString().trim());
+                }
+            });
+
+            const sortedNtes = Array.from(ntesSet).sort((a, b) => {
+                const numA = parseInt(a), numB = parseInt(b);
+                if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+                return a.localeCompare(b);
+            });
+
+            sortedNtes.forEach(nte => {
+                const opt = document.createElement('option');
+                opt.value = nte;
+                opt.textContent = `NTE ${nte.padStart(2, '0')}`;
+                nteSelect.appendChild(opt);
+            });
+        }
+
+        function updateMunicipioDropdown() {
+            const selectedNte = document.getElementById('filter-nte').value;
+            const muniSelect = document.getElementById('filter-municipio');
+            muniSelect.innerHTML = '<option value="">Todos os Municípios</option>';
+
+            const muniSet = new Set();
+            rawData.forEach(row => {
+                const rowNte = row[IDX_NTE] ? row[IDX_NTE].toString().trim() : '';
+                const rowMuni = row[IDX_MUNICIPIO] ? row[IDX_MUNICIPIO].toString().trim() : '';
+
+                if (rowMuni !== '') {
+                    if (!selectedNte || rowNte === selectedNte) {
+                        muniSet.add(rowMuni);
+                    }
+                }
+            });
+
+            const sortedMuni = Array.from(muniSet).sort((a, b) => a.localeCompare(b));
+            sortedMuni.forEach(muni => {
+                const opt = document.createElement('option');
+                opt.value = muni;
+                opt.textContent = muni;
+                muniSelect.appendChild(opt);
+            });
+        }
+
+        function buildColumnDropdown() {
+            const list = document.getElementById('checkbox-list');
+            list.innerHTML = '';
+
+            headers.forEach((h, idx) => {
+                const item = document.createElement('label');
+                item.className = 'checkbox-item';
+                item.innerHTML = `
+                    <input type="checkbox" checked data-index="${idx}" onchange="toggleSingleColumn(${idx}, this.checked)">
+                    <span>${h || `Coluna ${idx+1}`}</span>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function toggleDropdown() {
+            document.getElementById('column-dropdown').classList.toggle('show');
+        }
+
+        function toggleSingleColumn(index, isChecked) {
+            visibleColumns[index] = isChecked;
+            renderHeader();
+            applyFilters();
+        }
+
+        function toggleAllColumns(masterCheckbox) {
+            const isChecked = masterCheckbox.checked;
+            visibleColumns.fill(isChecked);
+            
+            const checkboxes = document.querySelectorAll('#checkbox-list input[type="checkbox"]');
+            checkboxes.forEach(cb => cb.checked = isChecked);
+
+            renderHeader();
+            applyFilters();
+        }
+
+        function renderHeader() {
+            const tr = document.getElementById('table-header');
+            tr.innerHTML = '';
+            headers.forEach((h, idx) => {
+                if (visibleColumns[idx]) {
+                    const th = document.createElement('th');
+                    th.textContent = h || `Coluna ${idx+1}`;
+                    tr.appendChild(th);
+                }
+            });
+        }
+
+        function applyFilters() {
+            const nteVal = document.getElementById('filter-nte').value;
+            const muniVal = document.getElementById('filter-municipio').value.toLowerCase();
+            const tipoValorVal = document.getElementById('filter-tipo-valor').value;
+            const searchCodSec = document.getElementById('search-cod-sec').value.trim().toLowerCase();
+            const searchCartao = document.getElementById('search-cartao').value.trim().toLowerCase();
+
+            let totalCusteio = 0;
+            let totalCapital = 0;
+            let count = 0;
+
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = '';
+
+            rawData.forEach(row => {
+                const nte = row[IDX_NTE] ? row[IDX_NTE].toString().trim() : '';
+                const muni = row[IDX_MUNICIPIO] ? row[IDX_MUNICIPIO].toString().trim().toLowerCase() : '';
+                const codSec = row[IDX_COD_SEC] ? row[IDX_COD_SEC].toString().trim().toLowerCase() : '';
+                const cartao = row[IDX_CARTAO] ? row[IDX_CARTAO].toString().trim().toLowerCase() : '';
+
+                const custeio = parseFloat(row[IDX_VALOR_CUSTEIO]) || 0;
+                const capital = parseFloat(row[IDX_VALOR_CAPITAL]) || 0;
+
+                const matchNte = !nteVal || nte === nteVal;
+                const matchMuni = !muniVal || muni === muniVal;
+                const matchCodSec = !searchCodSec || codSec.includes(searchCodSec);
+                const matchCartao = !searchCartao || cartao.includes(searchCartao);
+
+                let matchTipoValor = true;
+                if (tipoValorVal === 'custeio') matchTipoValor = custeio > 0;
+                if (tipoValorVal === 'capital') matchTipoValor = capital > 0;
+
+                if (matchNte && matchMuni && matchCodSec && matchCartao && matchTipoValor) {
+                    count++;
+                    totalCusteio += custeio;
+                    totalCapital += capital;
+
+                    const tr = document.createElement('tr');
+                    row.forEach((cellVal, colIdx) => {
+                        if (visibleColumns[colIdx]) {
+                            const td = document.createElement('td');
+                            // Formatar valores monetários (colunas de valor)
+                            if (colIdx >= 9 && colIdx <= 13 && typeof cellVal === 'number') {
+                                td.textContent = cellVal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                            } else {
+                                td.textContent = cellVal !== null && cellVal !== undefined ? cellVal : '';
+                            }
+                            tr.appendChild(td);
+                        }
+                    });
+                    tbody.appendChild(tr);
+                }
+            });
+
+            // Atualizar cards
+            document.getElementById('card-total-registros').textContent = count;
+            document.getElementById('card-total-custeio').textContent = totalCusteio.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            document.getElementById('card-total-capital').textContent = totalCapital.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            document.getElementById('card-soma-geral').textContent = (totalCusteio + totalCapital).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+            document.getElementById('visible-count').textContent = count;
+            document.getElementById('total-count').textContent = rawData.length;
+        }
+
+        function resetFilters() {
+            document.getElementById('filter-nte').value = '';
+            document.getElementById('filter-tipo-valor').value = 'todos';
+            document.getElementById('search-cod-sec').value = '';
+            document.getElementById('search-cartao').value = '';
+            updateMunicipioDropdown();
+            applyFilters();
+        }
+    </script>
+</body>
+</html>
