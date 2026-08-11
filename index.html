@@ -16,7 +16,7 @@
         }
 
         :root {
-            --sidebar-width: 280px;
+            --sidebar-width: 300px;
             --sidebar-bg: #f0f7f0;
             --sidebar-header: #2e7d32;
             --primary: #1b5e20;
@@ -27,6 +27,9 @@
             --text-muted: #6c757d;
             --border-color: #e0e5e9;
             --shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+            --success: #2e7d32;
+            --warning: #f57c00;
+            --danger: #c62828;
         }
 
         body {
@@ -119,7 +122,8 @@
             letter-spacing: 0.5px;
         }
 
-        .filter-group select {
+        .filter-group select,
+        .filter-group input {
             width: 100%;
             padding: 8px 12px;
             border: 1px solid #c8e6c9;
@@ -157,6 +161,105 @@
 
         .btn-reset:hover {
             background: #1b5e20;
+        }
+
+        /* ===== SEÇÃO REMESSA ===== */
+        .remessa-section {
+            background: #fff;
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin: 8px 0 14px 0;
+            border: 2px solid #a5d6a7;
+            flex-shrink: 0;
+        }
+
+        .remessa-section .section-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .remessa-section .section-title i {
+            font-size: 0.9rem;
+        }
+
+        .remessa-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 8px;
+            border-radius: 6px;
+            margin-bottom: 4px;
+            background: #f8fbf8;
+            transition: all 0.2s;
+            cursor: default;
+        }
+
+        .remessa-item:hover {
+            background: #e8f5e9;
+        }
+
+        .remessa-item .label {
+            font-size: 0.78rem;
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+
+        .remessa-item .badge {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 2px 10px;
+            border-radius: 12px;
+            background: var(--primary);
+            color: #fff;
+            min-width: 28px;
+            text-align: center;
+        }
+
+        .remessa-item .badge.warning {
+            background: var(--warning);
+        }
+
+        .remessa-item .badge.danger {
+            background: var(--danger);
+        }
+
+        .remessa-item .badge.success {
+            background: var(--success);
+        }
+
+        .remessa-divider {
+            height: 1px;
+            background: #c8e6c9;
+            margin: 6px 0;
+        }
+
+        .remessa-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 8px 0 8px;
+            border-top: 2px solid #a5d6a7;
+            margin-top: 6px;
+            padding-top: 10px;
+        }
+
+        .remessa-total .label {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .remessa-total .value {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--primary);
         }
 
         .btn-expand-sidebar {
@@ -441,7 +544,7 @@
             color: var(--text-dark);
         }
 
-        /* ===== TABELA VIRTUALIZADA ===== */
+        /* ===== TABELA ===== */
         .table-container {
             background: #fff;
             border-radius: 10px;
@@ -486,10 +589,6 @@
             max-width: 200px;
         }
 
-        tbody tr {
-            transition: background 0.15s;
-        }
-
         tbody tr:nth-child(even) {
             background: #f9fbf9;
         }
@@ -498,7 +597,6 @@
             background: #e8f5e9;
         }
 
-        /* Spinner de carregamento */
         .loading-spinner {
             display: flex;
             flex-direction: column;
@@ -524,7 +622,6 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Status de processamento */
         .processing-indicator {
             display: none;
             align-items: center;
@@ -549,7 +646,6 @@
             animation: spin 0.8s linear infinite;
         }
 
-        /* Paginação */
         .pagination-bar {
             display: flex;
             align-items: center;
@@ -624,7 +720,7 @@
 
         <div class="filter-group">
             <label><i class="fa-regular fa-circle-dot"></i> NTE</label>
-            <select id="filter-nte">
+            <select id="filter-nte" onchange="updateRemessaCount()">
                 <option value="">Todos os NTEs</option>
             </select>
         </div>
@@ -643,6 +739,23 @@
                 <option value="custeio">Apenas Custeio</option>
                 <option value="capital">Apenas Capital</option>
             </select>
+        </div>
+
+        <!-- ===== SEÇÃO REMESSA ===== -->
+        <div class="remessa-section" id="remessa-section">
+            <div class="section-title">
+                <i class="fa-solid fa-clipboard-list"></i>
+                Validação Remessa (Coluna O)
+            </div>
+            <div id="remessa-list">
+                <div class="remessa-item" style="justify-content: center; color: var(--text-muted); font-size: 0.75rem;">
+                    <span>Selecione um NTE para ver a contagem</span>
+                </div>
+            </div>
+            <div class="remessa-total" id="remessa-total" style="display: none;">
+                <span class="label">Total Geral</span>
+                <span class="value" id="remessa-total-value">0</span>
+            </div>
         </div>
 
         <button class="btn-reset" onclick="resetFilters()">
@@ -731,7 +844,7 @@
                 </div>
             </div>
 
-            <!-- TABELA VIRTUALIZADA -->
+            <!-- TABELA -->
             <div class="table-container" id="table-container">
                 <div id="loading" class="loading-spinner">
                     <div class="spinner"></div>
@@ -743,7 +856,6 @@
                     </thead>
                     <tbody id="table-body"></tbody>
                 </table>
-                <!-- Paginação -->
                 <div class="pagination-bar" id="pagination-bar" style="display: none;">
                     <span id="pagination-info">Mostrando 1-50 de 0 registros</span>
                     <div class="pagination-controls">
@@ -781,6 +893,7 @@
         const IDX_CARTAO = 8;
         const IDX_VALOR_CUSTEIO = 12;
         const IDX_VALOR_CAPITAL = 13;
+        const IDX_REMESSA = 14; // Coluna O (0-based: 14)
 
         // ===== DEBOUNCE =====
         function debounce(func, delay) {
@@ -795,7 +908,6 @@
         document.addEventListener('DOMContentLoaded', () => {
             fetchSheetData();
 
-            // Fechar dropdown ao clicar fora
             document.addEventListener('click', (e) => {
                 const wrapper = document.querySelector('.column-toggle-wrapper');
                 if (wrapper && !wrapper.contains(e.target)) {
@@ -803,7 +915,6 @@
                 }
             });
 
-            // Aplicar debounce nas pesquisas
             const searchSec = document.getElementById('search-cod-sec');
             const searchCartao = document.getElementById('search-cartao');
             
@@ -814,6 +925,7 @@
 
             document.getElementById('filter-nte').addEventListener('change', () => {
                 updateMunicipioDropdown();
+                updateRemessaCount();
                 applyFilters();
             });
             document.getElementById('filter-municipio').addEventListener('change', applyFilters);
@@ -854,6 +966,9 @@
                     document.getElementById('loading').style.display = 'none';
                     document.getElementById('data-table').style.display = 'table';
                     document.getElementById('pagination-bar').style.display = 'flex';
+
+                    // Atualizar remessa após carregar dados
+                    updateRemessaCount();
                 })
                 .catch(err => {
                     console.error('Erro ao carregar os dados:', err);
@@ -965,7 +1080,78 @@
             });
         }
 
-        // ===== APLICAR FILTROS (OTIMIZADO) =====
+        // ===== ATUALIZAR CONTAGEM REMESSA =====
+        function updateRemessaCount() {
+            const selectedNte = document.getElementById('filter-nte').value;
+            const remessaList = document.getElementById('remessa-list');
+            const remessaTotal = document.getElementById('remessa-total');
+            const remessaTotalValue = document.getElementById('remessa-total-value');
+
+            if (!selectedNte) {
+                remessaList.innerHTML = `
+                    <div class="remessa-item" style="justify-content: center; color: var(--text-muted); font-size: 0.75rem;">
+                        <span>Selecione um NTE para ver a contagem</span>
+                    </div>
+                `;
+                remessaTotal.style.display = 'none';
+                return;
+            }
+
+            // Filtrar dados pelo NTE selecionado
+            const nteData = rawData.filter(row => {
+                const nte = row[IDX_NTE] ? row[IDX_NTE].toString().trim() : '';
+                return nte === selectedNte;
+            });
+
+            // Contar valores da coluna O (Remessa)
+            const remessaCounts = {};
+            let totalCount = 0;
+
+            nteData.forEach(row => {
+                const remessaVal = row[IDX_REMESSA] ? row[IDX_REMESSA].toString().trim() : '';
+                if (remessaVal !== '') {
+                    remessaCounts[remessaVal] = (remessaCounts[remessaVal] || 0) + 1;
+                    totalCount++;
+                }
+            });
+
+            // Ordenar por valor
+            const sortedKeys = Object.keys(remessaCounts).sort();
+
+            if (sortedKeys.length === 0) {
+                remessaList.innerHTML = `
+                    <div class="remessa-item" style="justify-content: center; color: var(--text-muted); font-size: 0.75rem;">
+                        <span>Nenhum dado na coluna O para este NTE</span>
+                    </div>
+                `;
+                remessaTotal.style.display = 'none';
+                return;
+            }
+
+            // Construir lista
+            let html = '';
+            sortedKeys.forEach(key => {
+                const count = remessaCounts[key];
+                let badgeClass = 'success';
+                if (count > 100) badgeClass = 'danger';
+                else if (count > 50) badgeClass = 'warning';
+                
+                html += `
+                    <div class="remessa-item">
+                        <span class="label">${key}</span>
+                        <span class="badge ${badgeClass}">${count}</span>
+                    </div>
+                `;
+            });
+
+            remessaList.innerHTML = html;
+            
+            // Mostrar total
+            remessaTotal.style.display = 'flex';
+            remessaTotalValue.textContent = totalCount;
+        }
+
+        // ===== APLICAR FILTROS =====
         function applyFilters() {
             if (isProcessing || rawData.length === 0) return;
             
@@ -973,7 +1159,6 @@
             const indicator = document.getElementById('processing-indicator');
             indicator.classList.add('active');
 
-            // Usar requestAnimationFrame para não travar a UI
             requestAnimationFrame(() => {
                 setTimeout(() => {
                     const nteVal = document.getElementById('filter-nte').value;
@@ -986,7 +1171,6 @@
                     let totalCapital = 0;
                     let count = 0;
 
-                    // Filtrar dados de forma eficiente
                     filteredData = rawData.filter(row => {
                         const nte = row[IDX_NTE] ? row[IDX_NTE].toString().trim() : '';
                         const muni = row[IDX_MUNICIPIO] ? row[IDX_MUNICIPIO].toString().trim().toLowerCase() : '';
@@ -1016,7 +1200,6 @@
                         return match;
                     });
 
-                    // Atualizar cards
                     document.getElementById('card-total-registros').textContent = count;
                     document.getElementById('card-total-custeio').textContent = totalCusteio.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                     document.getElementById('card-total-capital').textContent = totalCapital.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -1025,7 +1208,6 @@
                     document.getElementById('visible-count').textContent = count;
                     document.getElementById('total-count').textContent = rawData.length;
 
-                    // Resetar página e renderizar
                     currentPage = 1;
                     renderPage();
 
@@ -1050,7 +1232,6 @@
             const tbody = document.getElementById('table-body');
             tbody.innerHTML = '';
 
-            // Renderizar apenas os dados da página atual
             pageData.forEach(row => {
                 const tr = document.createElement('tr');
                 row.forEach((cellVal, colIdx) => {
@@ -1061,14 +1242,13 @@
                         } else {
                             td.textContent = cellVal !== null && cellVal !== undefined ? cellVal : '';
                         }
-                        td.title = td.textContent; // Tooltip para texto cortado
+                        td.title = td.textContent;
                         tr.appendChild(td);
                     }
                 });
                 tbody.appendChild(tr);
             });
 
-            // Atualizar informações de paginação
             const startDisplay = totalItems === 0 ? 0 : start + 1;
             const endDisplay = Math.min(end, totalItems);
             
@@ -1088,7 +1268,6 @@
             if (newPage >= 1 && newPage <= totalPages) {
                 currentPage = newPage;
                 renderPage();
-                // Scroll para o topo da tabela
                 document.getElementById('table-container').scrollTop = 0;
             }
         }
@@ -1100,6 +1279,7 @@
             document.getElementById('search-cod-sec').value = '';
             document.getElementById('search-cartao').value = '';
             updateMunicipioDropdown();
+            updateRemessaCount();
             applyFilters();
         }
     </script>
