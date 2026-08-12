@@ -1246,13 +1246,12 @@
                 name: 'PNAE',
                 icon: 'fa-utensils',
                 remessaCol: 12,          // Coluna M - pode ter número ou texto
-                valorCusteioCol: 11,
+                valorCusteioCol: 11,      // Coluna L - Custeio
                 finalidadeCol: 14,
                 dataRemessaCol: 13,
                 dataOutraCol: 17,
                 colunaTNumero: null,
-                valorColunas: [9, 10, 11],
-                remessaTexto: true,      // Coluna M pode ter texto
+                valorColunas: [9, 10, 11], // J, K, L
                 hasCusteioCapital: true
             },
             faed: {
@@ -1261,13 +1260,12 @@
                 name: 'FAED',
                 icon: 'fa-hand-holding-heart',
                 remessaCol: 12,          // Coluna M - pode ter número ou texto
-                valorCusteioCol: 11,
+                valorCusteioCol: 11,      // Coluna L - Custeio
                 finalidadeCol: 14,
                 dataRemessaCol: 13,
                 dataOutraCol: 17,
                 colunaTNumero: null,
-                valorColunas: [9, 10, 11],
-                remessaTexto: true,      // Coluna M pode ter texto
+                valorColunas: [9, 10, 11], // J, K, L
                 hasCusteioCapital: true
             },
             manut: {
@@ -1276,14 +1274,13 @@
                 name: 'Manutenção',
                 icon: 'fa-tools',
                 remessaCol: 14,          // Coluna O - pode ter número ou texto
-                valorCusteioCol: 12,
-                valorCapitalCol: 13,
+                valorCusteioCol: 12,      // Coluna M - Custeio
+                valorCapitalCol: 13,      // Coluna N - Capital
                 finalidadeCol: 16,
                 dataRemessaCol: 15,
                 dataOutraCol: 23,
                 colunaTNumero: 19,
-                valorColunas: [9, 10, 12, 13],
-                remessaTexto: true,      // Coluna O pode ter texto
+                valorColunas: [9, 10, 12, 13], // J, K, M, N
                 hasCusteioCapital: true
             }
         };
@@ -1348,10 +1345,6 @@
 
         function getValorColunas(panel) {
             return PANELS[panel]?.valorColunas || [];
-        }
-
-        function getRemessaTexto(panel) {
-            return PANELS[panel]?.remessaTexto || false;
         }
 
         function isNumericColumn(colIdx) {
@@ -1755,7 +1748,6 @@
             });
 
             const sortedKeys = Object.keys(remessaData).sort((a, b) => {
-                // Tenta ordenar numericamente, se falhar ordena alfabeticamente
                 const numA = parseFloat(a);
                 const numB = parseFloat(b);
                 if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
@@ -1927,7 +1919,7 @@
                         else if (valorColunas.includes(colIdx)) {
                             td.textContent = formatCurrency(cellVal);
                         }
-                        // Verifica se é a coluna de remessa (M do PNAE/FAED ou O da Manut) - pode ter texto
+                        // Verifica se é a coluna de remessa (M do PNAE/FAED ou O da Manut)
                         else if (colIdx === remessaCol) {
                             td.textContent = cellVal !== null && cellVal !== undefined ? cellVal : '';
                         }
