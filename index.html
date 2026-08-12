@@ -1245,14 +1245,14 @@
                 color: '#1565C0',
                 name: 'PNAE',
                 icon: 'fa-utensils',
-                remessaCol: 12,
+                remessaCol: 12,          // Coluna M - pode ter número ou texto
                 valorCusteioCol: 11,
                 finalidadeCol: 14,
                 dataRemessaCol: 13,
                 dataOutraCol: 17,
                 colunaTNumero: null,
-                // Colunas J e K = índices 9 e 10 (Valor Original e Valor Bancário)
                 valorColunas: [9, 10, 11],
+                remessaTexto: true,      // Coluna M pode ter texto
                 hasCusteioCapital: true
             },
             faed: {
@@ -1260,13 +1260,14 @@
                 color: '#E65100',
                 name: 'FAED',
                 icon: 'fa-hand-holding-heart',
-                remessaCol: 12,
+                remessaCol: 12,          // Coluna M - pode ter número ou texto
                 valorCusteioCol: 11,
                 finalidadeCol: 14,
                 dataRemessaCol: 13,
                 dataOutraCol: 17,
                 colunaTNumero: null,
                 valorColunas: [9, 10, 11],
+                remessaTexto: true,      // Coluna M pode ter texto
                 hasCusteioCapital: true
             },
             manut: {
@@ -1274,15 +1275,15 @@
                 color: '#546E7A',
                 name: 'Manutenção',
                 icon: 'fa-tools',
-                remessaCol: 14,
+                remessaCol: 14,          // Coluna O - pode ter número ou texto
                 valorCusteioCol: 12,
                 valorCapitalCol: 13,
                 finalidadeCol: 16,
                 dataRemessaCol: 15,
                 dataOutraCol: 23,
                 colunaTNumero: 19,
-                // Colunas J e K = índices 9 e 10, M e N = 12 e 13
                 valorColunas: [9, 10, 12, 13],
+                remessaTexto: true,      // Coluna O pode ter texto
                 hasCusteioCapital: true
             }
         };
@@ -1347,6 +1348,10 @@
 
         function getValorColunas(panel) {
             return PANELS[panel]?.valorColunas || [];
+        }
+
+        function getRemessaTexto(panel) {
+            return PANELS[panel]?.remessaTexto || false;
         }
 
         function isNumericColumn(colIdx) {
@@ -1750,6 +1755,7 @@
             });
 
             const sortedKeys = Object.keys(remessaData).sort((a, b) => {
+                // Tenta ordenar numericamente, se falhar ordena alfabeticamente
                 const numA = parseFloat(a);
                 const numB = parseFloat(b);
                 if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
@@ -1905,6 +1911,7 @@
             const dataOutraCol = getDataOutraCol(panel);
             const colunaTNumero = getColunaTNumero(panel);
             const valorColunas = getValorColunas(panel);
+            const remessaCol = getRemessaCol(panel);
 
             pageData.forEach(row => {
                 const tr = document.createElement('tr');
@@ -1919,6 +1926,10 @@
                         // Verifica se é coluna de valor monetário (J, K, M, N)
                         else if (valorColunas.includes(colIdx)) {
                             td.textContent = formatCurrency(cellVal);
+                        }
+                        // Verifica se é a coluna de remessa (M do PNAE/FAED ou O da Manut) - pode ter texto
+                        else if (colIdx === remessaCol) {
+                            td.textContent = cellVal !== null && cellVal !== undefined ? cellVal : '';
                         }
                         // Verifica se é a coluna T da Manutenção (número)
                         else if (colIdx === colunaTNumero) {
