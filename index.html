@@ -242,7 +242,7 @@
         }
 
         .remessa-header .section-title .panel-indicator {
-            font-size: 0.6rem;
+            font-size: 0.55rem;
             background: var(--sidebar-header);
             color: #fff;
             padding: 1px 8px;
@@ -1060,8 +1060,8 @@
                 <div class="blue-divider"></div>
                 <div class="metrics-grid">
                     <div class="metric-card"><div class="title">Total de Registros</div><div class="value pnae-total">0</div></div>
-                    <div class="metric-card"><div class="title">Total Custeio</div><div class="value pnae-custeio">R$ 0,00</div></div>
-                    <div class="metric-card"><div class="title">Total Capital</div><div class="value pnae-capital">R$ 0,00</div></div>
+                    <div class="metric-card"><div class="title">Total Remessa</div><div class="value pnae-remessa">R$ 0,00</div></div>
+                    <div class="metric-card"><div class="title">Total Valor</div><div class="value pnae-valor">R$ 0,00</div></div>
                     <div class="metric-card"><div class="title">Soma Geral</div><div class="value pnae-geral">R$ 0,00</div></div>
                 </div>
                 <div class="blue-divider"></div>
@@ -1111,8 +1111,8 @@
                 <div class="blue-divider"></div>
                 <div class="metrics-grid">
                     <div class="metric-card"><div class="title">Total de Registros</div><div class="value faed-total">0</div></div>
-                    <div class="metric-card"><div class="title">Total Custeio</div><div class="value faed-custeio">R$ 0,00</div></div>
-                    <div class="metric-card"><div class="title">Total Capital</div><div class="value faed-capital">R$ 0,00</div></div>
+                    <div class="metric-card"><div class="title">Total Remessa</div><div class="value faed-remessa">R$ 0,00</div></div>
+                    <div class="metric-card"><div class="title">Total Valor</div><div class="value faed-valor">R$ 0,00</div></div>
                     <div class="metric-card"><div class="title">Soma Geral</div><div class="value faed-geral">R$ 0,00</div></div>
                 </div>
                 <div class="blue-divider"></div>
@@ -1204,21 +1204,31 @@
                 color: '#1565C0',
                 name: 'PNAE',
                 icon: 'fa-utensils',
-                remessaCol: 12  // Coluna M (0-based)
+                remessaCol: 12,     // Coluna M - REMESSA (número)
+                valorCol: 11,        // Coluna L - VALOR
+                hasCusteioCapital: false,
+                cardLabels: ['Total de Registros', 'Total Remessa', 'Total Valor', 'Soma Geral']
             },
             faed: {
                 sheet: 'Backup_Remessa_Faed',
                 color: '#E65100',
                 name: 'FAED',
                 icon: 'fa-hand-holding-heart',
-                remessaCol: 12  // Coluna M (0-based)
+                remessaCol: 12,     // Coluna M - REMESSA (número)
+                valorCol: 11,        // Coluna L - VALOR
+                hasCusteioCapital: false,
+                cardLabels: ['Total de Registros', 'Total Remessa', 'Total Valor', 'Soma Geral']
             },
             manut: {
                 sheet: 'Backup_Remessa_Manut',
                 color: '#546E7A',
                 name: 'Manutenção',
                 icon: 'fa-tools',
-                remessaCol: 14  // Coluna O (0-based)
+                remessaCol: 14,     // Coluna O - REMESSA
+                valorCusteioCol: 12, // Coluna M - CUSTEIO
+                valorCapitalCol: 13, // Coluna N - CAPITAL
+                hasCusteioCapital: true,
+                cardLabels: ['Total de Registros', 'Total Custeio', 'Total Capital', 'Soma Geral']
             }
         };
 
@@ -1237,13 +1247,11 @@
         let isRemessaExpanded = true;
         let currentTab = 'manut';
 
-        // Índices das colunas
+        // Índices das colunas comuns
         const IDX_NTE = 0;
         const IDX_MUNICIPIO = 1;
         const IDX_COD_SEC = 2;
         const IDX_CARTAO = 8;
-        const IDX_VALOR_CUSTEIO = 12;
-        const IDX_VALOR_CAPITAL = 13;
 
         // ===== FUNÇÕES AUXILIARES =====
         function debounce(func, delay) {
@@ -1256,6 +1264,14 @@
 
         function getRemessaCol(panel) {
             return PANELS[panel]?.remessaCol || 14;
+        }
+
+        function getValorCol(panel) {
+            return PANELS[panel]?.valorCol || 11;
+        }
+
+        function hasCusteioCapital(panel) {
+            return PANELS[panel]?.hasCusteioCapital || false;
         }
 
         // ===== INICIALIZAÇÃO =====
@@ -1339,6 +1355,9 @@
             
             // Atualizar remessa
             buildRemessaList();
+            
+            // Reaplicar filtros
+            applyFilters(tab);
         }
 
         // ===== CARREGAR DADOS DO PAINEL =====
@@ -1582,11 +1601,13 @@
                 const muniVal = document.getElementById('filter-municipio').value.toLowerCase();
                 const tipoValorVal = document.getElementById('filter-tipo-valor').value;
                 const remessaCol = getRemessaCol(panel);
+                const hasCusteioCap = hasCusteioCapital(panel);
                 
                 const searchInputs = document.querySelectorAll(`.search-input[data-panel="${panel}"]`);
                 const searchCodSec = searchInputs[0]?.value.trim().toLowerCase() || '';
                 const searchCartao = searchInputs[1]?.value.trim().toLowerCase() || '';
 
+                let totalRemessa = 0;
                 let totalCusteio = 0;
                 let totalCapital = 0;
                 let count = 0;
@@ -1598,8 +1619,12 @@
                     const cartao = row[IDX_CARTAO] ? row[IDX_CARTAO].toString().trim().toLowerCase() : '';
                     const remessa = row[remessaCol] ? row[remessaCol].toString().trim() : '';
 
-                    const custeio = parseFloat(row[IDX_VALOR_CUSTEIO]) || 0;
-                    const capital = parseFloat(row[IDX_VALOR_CAPITAL]) || 0;
+                    // Para PNAE e FAED: valor está na coluna L (índice 11)
+                    const valor = hasCusteioCap ? 0 : (parseFloat(row[getValorCol(panel)]) || 0);
+                    
+                    // Para Manutenção: custeio e capital
+                    const custeio = hasCusteioCap ? (parseFloat(row[PANELS[panel].valorCusteioCol]) || 0) : 0;
+                    const capital = hasCusteioCap ? (parseFloat(row[PANELS[panel].valorCapitalCol]) || 0) : 0;
 
                     const matchNte = !nteVal || nte === nteVal;
                     const matchMuni = !muniVal || muni === muniVal;
@@ -1608,15 +1633,21 @@
                     const matchRemessa = !selectedRemessa || remessa === selectedRemessa;
 
                     let matchTipoValor = true;
-                    if (tipoValorVal === 'custeio') matchTipoValor = custeio > 0;
-                    if (tipoValorVal === 'capital') matchTipoValor = capital > 0;
+                    if (hasCusteioCap) {
+                        if (tipoValorVal === 'custeio') matchTipoValor = custeio > 0;
+                        if (tipoValorVal === 'capital') matchTipoValor = capital > 0;
+                    }
 
                     const match = matchNte && matchMuni && matchCodSec && matchCartao && matchRemessa && matchTipoValor;
                     
                     if (match) {
-                        totalCusteio += custeio;
-                        totalCapital += capital;
                         count++;
+                        if (hasCusteioCap) {
+                            totalCusteio += custeio;
+                            totalCapital += capital;
+                        } else {
+                            totalRemessa += valor;
+                        }
                     }
                     
                     return match;
@@ -1625,9 +1656,16 @@
                 // Atualizar cards
                 const prefix = panel;
                 document.querySelector(`.${prefix}-total`).textContent = count;
-                document.querySelector(`.${prefix}-custeio`).textContent = totalCusteio.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-                document.querySelector(`.${prefix}-capital`).textContent = totalCapital.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-                document.querySelector(`.${prefix}-geral`).textContent = (totalCusteio + totalCapital).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                
+                if (hasCusteioCap) {
+                    document.querySelector(`.${prefix}-custeio`).textContent = totalCusteio.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                    document.querySelector(`.${prefix}-capital`).textContent = totalCapital.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                    document.querySelector(`.${prefix}-geral`).textContent = (totalCusteio + totalCapital).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                } else {
+                    document.querySelector(`.${prefix}-remessa`).textContent = totalRemessa.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                    document.querySelector(`.${prefix}-valor`).textContent = totalRemessa.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                    document.querySelector(`.${prefix}-geral`).textContent = totalRemessa.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                }
 
                 document.querySelector(`.${prefix}-visible`).textContent = count;
                 document.querySelector(`.${prefix}-total-count`).textContent = allData[panel].length;
@@ -1659,7 +1697,7 @@
                 row.forEach((cellVal, colIdx) => {
                     if (visibleColumns[panel][colIdx]) {
                         const td = document.createElement('td');
-                        if (colIdx >= 9 && colIdx <= 13 && typeof cellVal === 'number') {
+                        if (typeof cellVal === 'number' && cellVal > 0) {
                             td.textContent = cellVal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                         } else {
                             td.textContent = cellVal !== null && cellVal !== undefined ? cellVal : '';
