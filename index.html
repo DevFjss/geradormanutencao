@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador PNAE / FAED / Manutenção</title>
+    <title>Sistema de Gestão - PNAE | FAED | Manutenção</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -16,14 +16,26 @@
         }
 
         :root {
-            --primary-color: #1b5e20;
-            --primary-light: #e8f5e9;
-            --primary-border: #a5d6a7;
-            --pnae-blue: #1976d2;
+            --sidebar-width: 300px;
+            --sidebar-bg: #f0f7f0;
+            --sidebar-header: #2e7d32;
             --bg-body: #f4f7f6;
-            --border-color: #e0e0e0;
-            --text-dark: #2c3e50;
+            --card-bg: #ffffff;
+            --text-dark: #1a1a2e;
             --text-muted: #6c757d;
+            --border-color: #e0e5e9;
+            --shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+            --success: #2e7d32;
+            --warning: #f57c00;
+            --danger: #c62828;
+            --blue-divider: #1a73e8;
+
+            --pnae-color: #1565C0;
+            --pnae-light: #e3f2fd;
+            --faed-color: #E65100;
+            --faed-light: #fff3e0;
+            --manut-color: #546E7A;
+            --manut-light: #eceff1;
         }
 
         body {
@@ -34,292 +46,599 @@
             overflow: hidden;
         }
 
-        /* MENU LATERAL / FILTROS */
         aside {
-            width: 280px;
-            min-width: 280px;
-            background: #f0f7f0;
-            border-right: 1px solid var(--primary-border);
+            width: var(--sidebar-width);
+            min-width: var(--sidebar-width);
+            background: var(--sidebar-bg);
+            border-right: 1px solid #c8e6c9;
             display: flex;
             flex-direction: column;
-            padding: 16px;
+            padding: 20px 18px;
             overflow-y: auto;
-            gap: 12px;
+            z-index: 10;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            flex-shrink: 0;
             height: 100vh;
         }
 
-        .sidebar-title {
-            color: var(--primary-color);
-            font-size: 1rem;
-            font-weight: 700;
+        aside.collapsed {
+            width: 0;
+            min-width: 0;
+            padding: 0;
+            margin: 0;
+            overflow: hidden;
+            border: none;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .sidebar-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding-bottom: 8px;
-            border-bottom: 2px solid var(--primary-border);
+            color: var(--sidebar-header);
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #a5d6a7;
+            flex-shrink: 0;
+        }
+
+        .sidebar-header h2 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-toggle-sidebar {
+            background: var(--sidebar-header);
+            color: #fff;
+            border: none;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .btn-toggle-sidebar:hover {
+            background: #1b5e20;
+            transform: scale(1.05);
         }
 
         .filter-group {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
+            margin-bottom: 14px;
+            flex-shrink: 0;
         }
 
-        .filter-label {
+        .filter-group label {
+            display: block;
             font-size: 0.7rem;
             font-weight: 700;
-            color: var(--primary-color);
+            color: var(--sidebar-header);
+            margin-bottom: 4px;
             text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .filter-group select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #c8e6c9;
+            border-radius: 8px;
+            background: #fff;
+            font-size: 0.82rem;
+            color: var(--text-dark);
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .filter-group select:focus {
+            border-color: var(--sidebar-header);
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.15);
+        }
+
+        .search-input-wrapper {
+            position: relative;
+        }
+
+        .search-input-wrapper input {
+            width: 100%;
+            padding: 7px 12px 7px 34px;
+            border: 1px solid #c8e6c9;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            outline: none;
+            transition: all 0.2s;
+            background: #fafbfc;
+        }
+
+        .search-input-wrapper input:focus {
+            border-color: var(--sidebar-header);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+        }
+
+        .search-input-wrapper i {
+            position: absolute;
+            left: 11px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .btn-reset-filters {
+            width: 100%;
+            padding: 9px;
+            background: var(--sidebar-header);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
             display: flex;
             align-items: center;
-            gap: 4px;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 4px;
+            flex-shrink: 0;
+            font-size: 0.82rem;
         }
 
-        select, input {
-            width: 100%;
-            padding: 8px 10px;
-            border: 1px solid var(--primary-border);
-            border-radius: 6px;
-            font-size: 0.8rem;
-            outline: none;
+        .btn-reset-filters:hover {
+            background: #1b5e20;
+            transform: scale(1.02);
+        }
+
+        .remessa-section {
             background: #fff;
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin: 8px 0 14px 0;
+            border: 2px solid #a5d6a7;
+            flex-shrink: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
         }
 
-        select:focus, input:focus {
-            border-color: var(--primary-color);
+        .remessa-section.collapsed {
+            padding: 10px 16px;
         }
 
-        /* CARD DE VALIDAÇÃO DE REMESSA */
-        .card-remessa-validacao {
-            background: #fff;
-            border: 2px solid var(--primary-border);
-            border-radius: 8px;
-            padding: 10px;
+        .remessa-header {
             display: flex;
-            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .remessa-header .section-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--sidebar-header);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
             gap: 8px;
         }
 
-        .remessa-val-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .remessa-header .section-title i {
+            font-size: 0.9rem;
         }
 
-        .remessa-val-title {
-            font-size: 0.72rem;
+        .remessa-header .section-title .panel-indicator {
+            font-size: 0.55rem;
+            background: var(--sidebar-header);
+            color: #fff;
+            padding: 1px 8px;
+            border-radius: 10px;
             font-weight: 700;
-            color: var(--primary-color);
+        }
+
+        .remessa-toggle-btn {
+            background: transparent;
+            border: none;
+            color: var(--sidebar-header);
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: all 0.2s;
+            font-size: 0.9rem;
             display: flex;
             align-items: center;
             gap: 6px;
         }
 
-        .badge-tab {
-            background: var(--pnae-blue);
-            color: #fff;
-            font-size: 0.65rem;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-weight: 700;
+        .remessa-toggle-btn:hover {
+            background: #e8f5e9;
         }
 
-        .badge-count-total {
-            background: var(--primary-color);
-            color: #fff;
+        .remessa-toggle-btn .badge-count {
             font-size: 0.65rem;
+            font-weight: 700;
             padding: 2px 8px;
             border-radius: 10px;
-            font-weight: 700;
+            background: var(--sidebar-header);
+            color: #fff;
         }
 
-        .remessa-search-box {
+        .remessa-body {
+            overflow: hidden;
+            transition: all 0.3s ease;
+            max-height: 500px;
+        }
+
+        .remessa-body.collapsed {
+            max-height: 0;
+            padding-top: 0;
+            margin-top: 0;
+        }
+
+        .remessa-body-inner {
+            padding-top: 10px;
+        }
+
+        .remessa-search {
             position: relative;
+            margin-bottom: 10px;
         }
 
-        .remessa-search-box input {
-            padding-left: 28px;
-            font-size: 0.75rem;
+        .remessa-search input {
+            width: 100%;
+            padding: 6px 10px 6px 32px;
+            border: 1px solid #c8e6c9;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            outline: none;
+            transition: all 0.2s;
+            background: #fafbfc;
         }
 
-        .remessa-search-box i {
+        .remessa-search input:focus {
+            border-color: var(--sidebar-header);
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+        }
+
+        .remessa-search i {
             position: absolute;
-            left: 8px;
+            left: 10px;
             top: 50%;
             transform: translateY(-50%);
             color: var(--text-muted);
-            font-size: 0.75rem;
+            font-size: 0.8rem;
         }
 
-        .remessa-list-box {
+        .remessa-list-container {
             max-height: 180px;
             overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
+        }
+
+        .remessa-list-container::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .remessa-list-container::-webkit-scrollbar-track {
+            background: #f0f4f1;
+            border-radius: 4px;
+        }
+
+        .remessa-list-container::-webkit-scrollbar-thumb {
+            background: #a5d6a7;
+            border-radius: 4px;
         }
 
         .remessa-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 6px 10px;
-            background: #f8fbf8;
-            border: 1px solid #e0e0e0;
+            padding: 4px 8px;
             border-radius: 6px;
-            font-size: 0.78rem;
-            cursor: pointer;
+            margin-bottom: 2px;
+            background: #f8fbf8;
             transition: all 0.2s;
+            cursor: pointer;
         }
 
         .remessa-item:hover {
-            background: var(--primary-light);
-            border-color: var(--primary-border);
+            background: #e8f5e9;
         }
 
         .remessa-item.active {
-            background: var(--primary-border);
+            background: #a5d6a7;
+            font-weight: 600;
+        }
+
+        .remessa-item .label {
+            font-size: 0.73rem;
+            font-weight: 500;
+            color: var(--text-dark);
+            word-break: break-all;
+        }
+
+        .remessa-item .badge {
+            font-size: 0.6rem;
             font-weight: 700;
-            color: #1b5e20;
-        }
-
-        .remessa-item .badge-qty {
-            background: var(--primary-color);
+            padding: 2px 10px;
+            border-radius: 12px;
+            background: var(--sidebar-header);
             color: #fff;
-            font-size: 0.65rem;
-            padding: 2px 6px;
-            border-radius: 10px;
+            min-width: 24px;
+            text-align: center;
+            flex-shrink: 0;
+            margin-left: 8px;
         }
 
-        .btn-limpar {
-            background: var(--primary-color);
+        .remessa-item .badge.warning {
+            background: var(--warning);
+        }
+
+        .remessa-item .badge.danger {
+            background: var(--danger);
+        }
+
+        .remessa-item .badge.success {
+            background: var(--success);
+        }
+
+        .remessa-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 8px 0 8px;
+            border-top: 2px solid #a5d6a7;
+            margin-top: 6px;
+            padding-top: 8px;
+        }
+
+        .remessa-total .label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .remessa-total .value {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--sidebar-header);
+        }
+
+        .remessa-empty {
+            padding: 10px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+
+        .btn-expand-sidebar {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            z-index: 99;
+            background: var(--sidebar-header);
             color: #fff;
             border: none;
-            padding: 10px;
-            border-radius: 6px;
-            font-weight: 700;
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
             cursor: pointer;
-            display: flex;
+            display: none;
             align-items: center;
             justify-content: center;
-            gap: 6px;
-            font-size: 0.8rem;
+            box-shadow: 0 4px 16px rgba(27, 94, 32, 0.3);
+            transition: all 0.2s;
+            font-size: 1.2rem;
         }
 
-        .btn-limpar:hover {
-            background: #144718;
+        .btn-expand-sidebar:hover {
+            background: #1b5e20;
+            transform: scale(1.05);
         }
 
-        /* ÁREA CONTEÚDO PRINCIPAL */
+        .btn-expand-sidebar.visible {
+            display: flex;
+        }
+
         main {
             flex: 1;
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            background: #fff;
+            min-width: 0;
         }
 
         header {
+            background: #fff;
             padding: 12px 24px;
             border-bottom: 1px solid var(--border-color);
             display: flex;
             justify-content: space-between;
             align-items: center;
-        }
-
-        .brand-title {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: #2c3e50;
-            display: flex;
-            align-items: center;
+            flex-shrink: 0;
+            flex-wrap: wrap;
             gap: 10px;
         }
 
-        .brand-title i {
-            color: var(--primary-color);
-        }
-
-        .badge-aba-ativa {
-            font-size: 0.75rem;
-            background: #eef2f5;
-            padding: 4px 12px;
-            border-radius: 12px;
-            color: var(--text-muted);
-        }
-
-        /* TABS SUPERIORES */
-        .tabs-bar {
+        header h1 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-dark);
             display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        header h1 i {
+            color: var(--sidebar-header);
+        }
+
+        .sheet-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            background: #f0f4f1;
+            padding: 4px 14px;
+            border-radius: 20px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.pnae { background: var(--pnae-color); }
+        .status-dot.faed { background: var(--faed-color); }
+        .status-dot.manut { background: var(--manut-color); }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .tabs-container {
+            background: #fff;
             border-bottom: 2px solid var(--border-color);
             padding: 0 24px;
+            display: flex;
+            gap: 0;
+            flex-shrink: 0;
+            overflow-x: auto;
         }
 
-        .tab-item {
-            padding: 12px 20px;
+        .tab-btn {
+            padding: 12px 24px;
             border: none;
             background: transparent;
             font-size: 0.85rem;
             font-weight: 600;
             color: var(--text-muted);
             cursor: pointer;
-            border-bottom: 3px solid transparent;
+            position: relative;
+            transition: all 0.3s;
+            white-space: nowrap;
             display: flex;
             align-items: center;
             gap: 8px;
+            border-bottom: 3px solid transparent;
         }
 
-        .tab-item.active {
-            color: var(--pnae-blue);
-            border-bottom-color: var(--pnae-blue);
-            font-weight: 700;
+        .tab-btn:hover {
+            color: var(--text-dark);
+            background: #f8f9fa;
         }
 
-        .container-body {
+        .tab-btn.active {
+            color: var(--text-dark);
+            border-bottom-width: 3px;
+        }
+
+        .tab-btn.active .tab-icon {
+            transform: scale(1.1);
+        }
+
+        .tab-btn .tab-icon {
+            font-size: 1rem;
+            transition: transform 0.3s;
+        }
+
+        .tab-btn.tab-pnae.active { border-bottom-color: var(--pnae-color); }
+        .tab-btn.tab-pnae .tab-icon { color: var(--pnae-color); }
+        .tab-btn.tab-pnae:hover { color: var(--pnae-color); }
+
+        .tab-btn.tab-faed.active { border-bottom-color: var(--faed-color); }
+        .tab-btn.tab-faed .tab-icon { color: var(--faed-color); }
+        .tab-btn.tab-faed:hover { color: var(--faed-color); }
+
+        .tab-btn.tab-manut.active { border-bottom-color: var(--manut-color); }
+        .tab-btn.tab-manut .tab-icon { color: var(--manut-color); }
+        .tab-btn.tab-manut:hover { color: var(--manut-color); }
+
+        .content-body {
             padding: 16px 24px;
+            overflow: hidden;
+            flex: 1;
             display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .panel-content {
+            display: none;
             flex-direction: column;
             gap: 14px;
             flex: 1;
             overflow: hidden;
         }
 
-        .filter-cards-row {
+        .panel-content.active {
+            display: flex;
+        }
+
+        .blue-divider {
+            background: linear-gradient(90deg, var(--blue-divider), #4fc3f7);
+            height: 3px;
+            border: none;
+            border-radius: 2px;
+            margin: 2px 0 6px 0;
+            flex-shrink: 0;
+            box-shadow: 0 1px 4px rgba(26, 115, 232, 0.2);
+        }
+
+        .search-grid {
             display: grid;
-            grid-template-columns: 1.2fr 1fr 1fr;
-            gap: 14px;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 16px;
+            flex-shrink: 0;
         }
 
-        .filter-card {
+        .search-card {
             background: #fff;
+            padding: 14px 18px;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
             border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 10px 14px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
         }
 
-        .filter-card label {
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: #333;
+        .search-card h3 {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 6px;
             display: flex;
             align-items: center;
-            gap: 6px;
-            margin-bottom: 6px;
+            gap: 8px;
         }
 
-        .metrics-row {
+        .search-card h3 i {
+            color: var(--sidebar-header);
+        }
+
+        .metrics-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr 1fr;
-            gap: 14px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            flex-shrink: 0;
         }
 
         .metric-card {
             background: #fff;
+            padding: 12px 18px;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
             border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
         }
 
         .metric-card .title {
@@ -327,478 +646,1344 @@
             font-weight: 700;
             color: var(--text-muted);
             text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .metric-card .value {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: 700;
-            color: #1a1a1a;
-            margin-top: 4px;
+            color: var(--text-dark);
+            margin-top: 2px;
         }
 
-        .table-controls {
+        .controls-bar {
+            background: #fff;
+            padding: 8px 16px;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .column-toggle-wrapper {
+            position: relative;
+        }
+
+        .btn-toggle-cols {
+            background: #f8f9fa;
+            border: 1px solid var(--border-color);
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            color: var(--text-dark);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .btn-toggle-cols:hover {
+            background: #e8f5e9;
+            border-color: var(--sidebar-header);
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 110%;
+            left: 0;
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+            width: 260px;
+            max-height: 280px;
+            overflow-y: auto;
+            padding: 10px 12px;
+            z-index: 100;
+        }
+
+        .dropdown-menu.show {
+            display: block;
+        }
+
+        .dropdown-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 0.8rem;
-            color: var(--text-muted);
+            padding-bottom: 6px;
+            margin-bottom: 6px;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
+            font-size: 0.75rem;
         }
 
-        .btn-colunas {
-            border: 1px solid var(--border-color);
-            background: #fff;
-            padding: 6px 12px;
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 3px 6px;
             border-radius: 6px;
-            font-size: 0.78rem;
+            font-size: 0.75rem;
             cursor: pointer;
         }
 
-        /* TABELA */
-        .table-wrapper {
+        .checkbox-item:hover {
+            background: #f0f4f1;
+        }
+
+        .checkbox-item input {
+            accent-color: var(--sidebar-header);
+        }
+
+        .records-count {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .records-count strong {
+            color: var(--text-dark);
+        }
+
+        .table-container {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
             flex: 1;
             overflow: auto;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
+            min-height: 200px;
+            position: relative;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
             font-size: 0.75rem;
+            table-layout: fixed;
         }
 
         thead {
             position: sticky;
             top: 0;
-            background: #1565c0;
-            color: #fff;
             z-index: 10;
         }
 
-        th, td {
-            padding: 10px 12px;
+        thead.pnae-header { background: var(--pnae-color); color: #fff; }
+        thead.faed-header { background: var(--faed-color); color: #fff; }
+        thead.manut-header { background: var(--manut-color); color: #fff; }
+
+        th {
+            padding: 8px 12px;
             text-align: left;
+            font-weight: 600;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+            position: relative;
+            user-select: none;
+            min-width: 60px;
+        }
+
+        th .resize-handle {
+            position: absolute;
+            top: 0;
+            right: -3px;
+            width: 6px;
+            height: 100%;
+            cursor: col-resize;
+            z-index: 20;
+            background: transparent;
+            transition: background 0.2s;
+        }
+
+        th .resize-handle:hover,
+        th .resize-handle.active {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        th .resize-handle::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 2px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            transition: background 0.2s;
+        }
+
+        th .resize-handle:hover::after,
+        th .resize-handle.active::after {
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        td {
+            padding: 6px 12px;
             border-bottom: 1px solid var(--border-color);
             white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         tbody tr:nth-child(even) {
-            background: #fcfcfc;
+            background: #f9fbf9;
         }
 
         tbody tr:hover {
             background: #e8f5e9;
         }
 
-        .cell-remessa-text {
+        .loading-spinner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            gap: 12px;
+            color: var(--text-muted);
+            height: 100%;
+        }
+
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid #e0e0e0;
+            border-top: 3px solid var(--sidebar-header);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .processing-indicator {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            padding: 4px 12px;
             background: #fff3e0;
-            color: #e65100;
-            padding: 3px 8px;
-            border-radius: 4px;
-            border: 1px solid #ffe0b2;
-            font-weight: 700;
+            border-radius: 20px;
+        }
+
+        .processing-indicator.active {
+            display: inline-flex;
+        }
+
+        .processing-indicator .spinner-small {
+            width: 16px;
+            height: 16px;
+            border: 2px solid #e0e0e0;
+            border-top: 2px solid var(--sidebar-header);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .pagination-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 12px;
+            background: #f8f9fa;
+            border-top: 1px solid var(--border-color);
+            flex-shrink: 0;
+            font-size: 0.75rem;
+        }
+
+        .pagination-controls {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .pagination-controls button {
+            padding: 4px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: #fff;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.75rem;
+        }
+
+        .pagination-controls button:hover:not(:disabled) {
+            background: var(--sidebar-header);
+            color: #fff;
+            border-color: var(--sidebar-header);
+        }
+
+        .pagination-controls button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .pagination-controls .page-info {
+            padding: 0 10px;
+            font-weight: 600;
+        }
+
+        @media (max-width: 1100px) {
+            .search-grid { grid-template-columns: 1fr 1fr; }
+        }
+
+        @media (max-width: 900px) {
+            .search-grid { grid-template-columns: 1fr; }
+            .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+            header h1 { font-size: 0.95rem; }
+            .tabs-container { padding: 0 12px; }
+            .tab-btn { padding: 10px 16px; font-size: 0.75rem; }
+        }
+
+        @media (max-width: 600px) {
+            .metrics-grid { grid-template-columns: 1fr 1fr; }
+            .content-body { padding: 10px; }
+            header { padding: 8px 14px; }
+            .controls-bar { flex-direction: column; align-items: stretch; }
+            .tab-btn { padding: 8px 12px; font-size: 0.7rem; }
+            .tab-btn .tab-icon { font-size: 0.85rem; }
         }
     </style>
 </head>
 <body>
 
-    <!-- MENU LATERAL DA ESQUERDA -->
-    <aside>
-        <div class="sidebar-title">
-            <span><i class="fa-solid fa-filter"></i> Filtros</span>
-            <i class="fa-solid fa-angles-left"></i>
+    <button class="btn-expand-sidebar" id="btn-show-sidebar" onclick="toggleSidebar()" title="Exibir Filtros">
+        <i class="fa-solid fa-angles-right"></i>
+    </button>
+
+    <aside id="sidebar">
+        <div class="sidebar-header">
+            <h2><i class="fa-solid fa-sliders-h"></i> Filtros</h2>
+            <button class="btn-toggle-sidebar" onclick="toggleSidebar()" title="Ocultar Menu">
+                <i class="fa-solid fa-angles-left"></i>
+            </button>
         </div>
 
         <div class="filter-group">
-            <span class="filter-label"><i class="fa-solid fa-circle-dot"></i> NTE</span>
-            <select id="select-nte" onchange="renderTable()">
+            <label><i class="fa-regular fa-circle-dot"></i> NTE</label>
+            <select id="filter-nte">
                 <option value="">Todos os NTEs</option>
             </select>
         </div>
 
         <div class="filter-group">
-            <span class="filter-label"><i class="fa-solid fa-building"></i> MUNICÍPIO</span>
-            <select id="select-municipio" onchange="renderTable()">
+            <label><i class="fa-regular fa-building"></i> Município</label>
+            <select id="filter-municipio">
                 <option value="">Todos os Municípios</option>
             </select>
         </div>
 
         <div class="filter-group">
-            <span class="filter-label"><i class="fa-solid fa-layer-group"></i> TIPO DE RECURSO</span>
-            <select id="select-recurso" onchange="renderTable()">
-                <option value="">Todos</option>
+            <label><i class="fa-regular fa-coins"></i> Tipo de Recurso</label>
+            <select id="filter-tipo-valor">
+                <option value="todos">Todos</option>
+                <option value="custeio">Apenas Custeio</option>
+                <option value="capital">Apenas Capital</option>
             </select>
         </div>
 
-        <!-- VALIDAÇÃO REMESSA DA IMAGEM -->
-        <div class="card-remessa-validacao">
-            <div class="remessa-val-header">
-                <div class="remessa-val-title">
-                    <i class="fa-solid fa-list-check"></i>
-                    VALIDAÇÃO REMESSA
-                    <span class="badge-tab" id="badge-aba-nome">Pnae</span>
+        <div class="remessa-section" id="remessa-section">
+            <div class="remessa-header" onclick="toggleRemessa()">
+                <div class="section-title">
+                    <i class="fa-solid fa-clipboard-list"></i>
+                    Validação Remessa
+                    <span class="panel-indicator" id="remessa-panel-indicator">MANUT</span>
                 </div>
-                <span class="badge-count-total" id="total-itens-remessa">0</span>
+                <button class="remessa-toggle-btn" id="remessa-toggle-btn">
+                    <span class="badge-count" id="remessa-badge-count">0</span>
+                    <i class="fa-solid fa-chevron-up" id="remessa-chevron"></i>
+                </button>
             </div>
-
-            <div class="remessa-search-box">
-                <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" id="input-busca-remessa" placeholder="Filtrar remessa..." oninput="filtrarListaRemessasMenu()">
-            </div>
-
-            <div class="remessa-list-box" id="container-lista-remessa"></div>
-
-            <div style="display: flex; justify-content: space-between; font-size: 0.72rem; font-weight: 700; padding-top: 4px; border-top: 1px solid var(--border-color);">
-                <span>Total de Itens</span>
-                <span id="label-total-itens">0</span>
+            
+            <div class="remessa-body" id="remessa-body">
+                <div class="remessa-body-inner">
+                    <div class="remessa-search">
+                        <i class="fa-solid fa-search"></i>
+                        <input type="text" id="remessa-search-input" placeholder="Filtrar remessa..." oninput="filterRemessaList()">
+                    </div>
+                    <div class="remessa-list-container" id="remessa-list-container">
+                        <div id="remessa-list">
+                            <div class="remessa-empty">Carregando dados...</div>
+                        </div>
+                    </div>
+                    <div class="remessa-total" id="remessa-total">
+                        <span class="label">Total de Itens</span>
+                        <span class="value" id="remessa-total-value">0</span>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <button class="btn-limpar" onclick="limparFiltros()">
+        <button class="btn-reset-filters" onclick="resetAllFilters()">
             <i class="fa-solid fa-rotate-left"></i> Limpar Filtros
         </button>
     </aside>
 
-    <!-- ÁREA PRINCIPAL -->
     <main>
         <header>
-            <div class="brand-title">
-                <i class="fa-solid fa-chart-line"></i> Gerador PNAE
-            </div>
-            <div class="badge-aba-ativa">
-                Aba: <strong id="lbl-nome-aba">Backup_Remessa_Pnae</strong>
+            <h1><i class="fa-solid fa-chart-pie"></i> <span id="painel-title">Sistema de Gestão</span></h1>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div class="processing-indicator" id="processing-indicator">
+                    <div class="spinner-small"></div>
+                    <span>Processando...</span>
+                </div>
+                <div class="sheet-status">
+                    <div class="status-dot manut" id="status-dot"></div>
+                    <span>Aba: <strong id="sheet-name">Backup_Remessa_Manut</strong></span>
+                </div>
             </div>
         </header>
 
-        <!-- TABS DE APOSTAS / ABAS -->
-        <div class="tabs-bar">
-            <button class="tab-item active" id="tab-pnae" onclick="trocarAba('Backup_Remessa_Pnae')">
-                <i class="fa-solid fa-utensils"></i> PNAE
+        <div class="tabs-container">
+            <button class="tab-btn tab-pnae" data-tab="pnae" onclick="switchTab('pnae')">
+                <i class="fas fa-utensils tab-icon"></i> PNAE
             </button>
-            <button class="tab-item" id="tab-faed" onclick="trocarAba('Backup_Remessa_Faed')">
-                <i class="fa-solid fa-hand-holding-heart"></i> FAED
+            <button class="tab-btn tab-faed" data-tab="faed" onclick="switchTab('faed')">
+                <i class="fas fa-hand-holding-heart tab-icon"></i> FAED
             </button>
-            <button class="tab-item" id="tab-manut" onclick="trocarAba('Backup_Remessa_Manut')">
-                <i class="fa-solid fa-wrench"></i> Manutenção
+            <button class="tab-btn tab-manut active" data-tab="manut" onclick="switchTab('manut')">
+                <i class="fas fa-tools tab-icon"></i> Manutenção
             </button>
         </div>
 
-        <div class="container-body">
-            <div class="filter-cards-row">
-                <div class="filter-card">
-                    <label><i class="fa-solid fa-barcode"></i> Código SEC</label>
-                    <input type="text" id="input-cod-sec" placeholder="Q 1120915..." oninput="renderTable()">
+        <div class="content-body">
+            
+            <div class="panel-content" id="panel-pnae">
+                <div class="blue-divider"></div>
+                <div class="search-grid">
+                    <div class="search-card">
+                        <h3><i class="fa-solid fa-barcode"></i> Código SEC</h3>
+                        <div class="search-input-wrapper">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" class="search-input" data-panel="pnae" data-field="codsec" placeholder="Digite o Código SEC...">
+                        </div>
+                    </div>
+                    <div class="search-card">
+                        <h3><i class="fa-solid fa-credit-card"></i> Nº Cartão</h3>
+                        <div class="search-input-wrapper">
+                            <i class="fa-regular fa-credit-card"></i>
+                            <input type="text" class="search-input" data-panel="pnae" data-field="cartao" placeholder="Digite o nº do Cartão...">
+                        </div>
+                    </div>
+                    <div class="search-card">
+                        <h3><i class="fa-solid fa-file-pen"></i> Finalidade</h3>
+                        <div class="search-input-wrapper">
+                            <i class="fa-solid fa-search"></i>
+                            <input type="text" class="search-input" data-panel="pnae" data-field="finalidade" placeholder="Digite a Finalidade...">
+                        </div>
+                    </div>
                 </div>
-
-                <div class="filter-card">
-                    <label><i class="fa-solid fa-credit-card"></i> Nº Cartão</label>
-                    <input type="text" id="input-cartao" placeholder="Digite o nº do Cartão..." oninput="renderTable()">
+                <div class="blue-divider"></div>
+                <div class="metrics-grid">
+                    <div class="metric-card"><div class="title">Total de Registros</div><div class="value pnae-total">0</div></div>
+                    <div class="metric-card"><div class="title">Total Custeio</div><div class="value pnae-custeio">R$ 0,00</div></div>
+                    <div class="metric-card"><div class="title">Total Capital</div><div class="value pnae-capital">R$ 0,00</div></div>
+                    <div class="metric-card"><div class="title">Soma Geral</div><div class="value pnae-geral">R$ 0,00</div></div>
                 </div>
-
-                <div class="filter-card">
-                    <label><i class="fa-solid fa-file-lines"></i> Finalidade</label>
-                    <input type="text" id="input-finalidade" placeholder="Digite a Finalidade..." oninput="renderTable()">
+                <div class="blue-divider"></div>
+                <div class="controls-bar">
+                    <div class="column-toggle-wrapper">
+                        <button class="btn-toggle-cols" onclick="toggleDropdown('pnae')">
+                            <i class="fa-regular fa-columns"></i> Colunas <i class="fa-solid fa-chevron-down" style="font-size: 0.6rem;"></i>
+                        </button>
+                        <div class="dropdown-menu" id="dropdown-pnae"></div>
+                    </div>
+                    <div class="records-count">Exibindo <strong class="pnae-visible">0</strong> de <strong class="pnae-total-count">0</strong></div>
+                </div>
+                <div class="blue-divider"></div>
+                <div class="table-container">
+                    <div class="loading-spinner pnae-loading"><div class="spinner"></div><span>Carregando...</span></div>
+                    <table class="pnae-table" style="display:none;"><thead class="pnae-header"><tr></tr></thead><tbody></tbody></table>
+                    <div class="pagination-bar pnae-pagination" style="display:none;">
+                        <span class="pnae-info">Mostrando 1-50 de 0</span>
+                        <div class="pagination-controls">
+                            <button class="pnae-prev" onclick="changePage('pnae', -1)"><i class="fa-solid fa-chevron-left"></i></button>
+                            <span class="page-info pnae-page">Página 1 de 1</span>
+                            <button class="pnae-next" onclick="changePage('pnae', 1)"><i class="fa-solid fa-chevron-right"></i></button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="metrics-row">
-                <div class="metric-card">
-                    <div class="title">TOTAL DE REGISTROS</div>
-                    <div class="value" id="metric-total-registros">0</div>
+            <div class="panel-content" id="panel-faed">
+                <div class="blue-divider"></div>
+                <div class="search-grid">
+                    <div class="search-card">
+                        <h3><i class="fa-solid fa-barcode"></i> Código SEC</h3>
+                        <div class="search-input-wrapper">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" class="search-input" data-panel="faed" data-field="codsec" placeholder="Digite o Código SEC...">
+                        </div>
+                    </div>
+                    <div class="search-card">
+                        <h3><i class="fa-solid fa-credit-card"></i> Nº Cartão</h3>
+                        <div class="search-input-wrapper">
+                            <i class="fa-regular fa-credit-card"></i>
+                            <input type="text" class="search-input" data-panel="faed" data-field="cartao" placeholder="Digite o nº do Cartão...">
+                        </div>
+                    </div>
+                    <div class="search-card">
+                        <h3><i class="fa-solid fa-file-pen"></i> Finalidade</h3>
+                        <div class="search-input-wrapper">
+                            <i class="fa-solid fa-search"></i>
+                            <input type="text" class="search-input" data-panel="faed" data-field="finalidade" placeholder="Digite a Finalidade...">
+                        </div>
+                    </div>
                 </div>
-                <div class="metric-card">
-                    <div class="title">TOTAL CUSTEIO</div>
-                    <div class="value" id="metric-total-custeio">R$ 0,00</div>
+                <div class="blue-divider"></div>
+                <div class="metrics-grid">
+                    <div class="metric-card"><div class="title">Total de Registros</div><div class="value faed-total">0</div></div>
+                    <div class="metric-card"><div class="title">Total Custeio</div><div class="value faed-custeio">R$ 0,00</div></div>
+                    <div class="metric-card"><div class="title">Total Capital</div><div class="value faed-capital">R$ 0,00</div></div>
+                    <div class="metric-card"><div class="title">Soma Geral</div><div class="value faed-geral">R$ 0,00</div></div>
                 </div>
-                <div class="metric-card">
-                    <div class="title">TOTAL CAPITAL</div>
-                    <div class="value" id="metric-total-capital">R$ 0,00</div>
+                <div class="blue-divider"></div>
+                <div class="controls-bar">
+                    <div class="column-toggle-wrapper">
+                        <button class="btn-toggle-cols" onclick="toggleDropdown('faed')">
+                            <i class="fa-regular fa-columns"></i> Colunas <i class="fa-solid fa-chevron-down" style="font-size: 0.6rem;"></i>
+                        </button>
+                        <div class="dropdown-menu" id="dropdown-faed"></div>
+                    </div>
+                    <div class="records-count">Exibindo <strong class="faed-visible">0</strong> de <strong class="faed-total-count">0</strong></div>
                 </div>
-                <div class="metric-card">
-                    <div class="title">SOMA GERAL</div>
-                    <div class="value" id="metric-soma-geral">R$ 0,00</div>
+                <div class="blue-divider"></div>
+                <div class="table-container">
+                    <div class="loading-spinner faed-loading"><div class="spinner"></div><span>Carregando...</span></div>
+                    <table class="faed-table" style="display:none;"><thead class="faed-header"><tr></tr></thead><tbody></tbody></table>
+                    <div class="pagination-bar faed-pagination" style="display:none;">
+                        <span class="faed-info">Mostrando 1-50 de 0</span>
+                        <div class="pagination-controls">
+                            <button class="faed-prev" onclick="changePage('faed', -1)"><i class="fa-solid fa-chevron-left"></i></button>
+                            <span class="page-info faed-page">Página 1 de 1</span>
+                            <button class="faed-next" onclick="changePage('faed', 1)"><i class="fa-solid fa-chevron-right"></i></button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="table-controls">
-                <button class="btn-colunas"><i class="fa-solid fa-table-columns"></i> Colunas <i class="fa-solid fa-chevron-down"></i></button>
-                <div>Exibindo <strong id="lbl-exibindo-qtd">0</strong> de <strong id="lbl-total-qtd">0</strong></div>
+            <div class="panel-content active" id="panel-manut">
+                <div class="blue-divider"></div>
+                <div class="search-grid">
+                    <div class="search-card">
+                        <h3><i class="fa-solid fa-barcode"></i> Código SEC</h3>
+                        <div class="search-input-wrapper">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" class="search-input" data-panel="manut" data-field="codsec" placeholder="Digite o Código SEC...">
+                        </div>
+                    </div>
+                    <div class="search-card">
+                        <h3><i class="fa-solid fa-credit-card"></i> Nº Cartão</h3>
+                        <div class="search-input-wrapper">
+                            <i class="fa-regular fa-credit-card"></i>
+                            <input type="text" class="search-input" data-panel="manut" data-field="cartao" placeholder="Digite o nº do Cartão...">
+                        </div>
+                    </div>
+                    <div class="search-card">
+                        <h3><i class="fa-solid fa-file-pen"></i> Finalidade</h3>
+                        <div class="search-input-wrapper">
+                            <i class="fa-solid fa-search"></i>
+                            <input type="text" class="search-input" data-panel="manut" data-field="finalidade" placeholder="Digite a Finalidade...">
+                        </div>
+                    </div>
+                </div>
+                <div class="blue-divider"></div>
+                <div class="metrics-grid">
+                    <div class="metric-card"><div class="title">Total de Registros</div><div class="value manut-total">0</div></div>
+                    <div class="metric-card"><div class="title">Total Custeio</div><div class="value manut-custeio">R$ 0,00</div></div>
+                    <div class="metric-card"><div class="title">Total Capital</div><div class="value manut-capital">R$ 0,00</div></div>
+                    <div class="metric-card"><div class="title">Soma Geral</div><div class="value manut-geral">R$ 0,00</div></div>
+                </div>
+                <div class="blue-divider"></div>
+                <div class="controls-bar">
+                    <div class="column-toggle-wrapper">
+                        <button class="btn-toggle-cols" onclick="toggleDropdown('manut')">
+                            <i class="fa-regular fa-columns"></i> Colunas <i class="fa-solid fa-chevron-down" style="font-size: 0.6rem;"></i>
+                        </button>
+                        <div class="dropdown-menu" id="dropdown-manut"></div>
+                    </div>
+                    <div class="records-count">Exibindo <strong class="manut-visible">0</strong> de <strong class="manut-total-count">0</strong></div>
+                </div>
+                <div class="blue-divider"></div>
+                <div class="table-container">
+                    <div class="loading-spinner manut-loading"><div class="spinner"></div><span>Carregando...</span></div>
+                    <table class="manut-table" style="display:none;"><thead class="manut-header"><tr></tr></thead><tbody></tbody></table>
+                    <div class="pagination-bar manut-pagination" style="display:none;">
+                        <span class="manut-info">Mostrando 1-50 de 0</span>
+                        <div class="pagination-controls">
+                            <button class="manut-prev" onclick="changePage('manut', -1)"><i class="fa-solid fa-chevron-left"></i></button>
+                            <span class="page-info manut-page">Página 1 de 1</span>
+                            <button class="manut-next" onclick="changePage('manut', 1)"><i class="fa-solid fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="table-wrapper">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>DIRETOR(A)</th>
-                            <th>ID CUSTRO</th>
-                            <th>CARTAO</th>
-                            <th>VALOR ORIGINAL</th>
-                            <th>VALOR BANCO</th>
-                            <th>VALOR MAXIMO CONFIGURACAO DO BANCO</th>
-                            <th>REMESSA</th>
-                            <th>DATA DA REMESSA</th>
-                            <th>FINALIDADE</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tbody-dados">
-                        <tr><td colspan="9" style="text-align:center;">Carregando dados...</td></tr>
-                    </tbody>
-                </table>
-            </div>
         </div>
     </main>
 
     <script>
-        // ID DA PLANILHA GOOGLE (Substitua se necessário)
-        const SHEET_ID = 'SUA_ID_DA_PLANILHA_AQUI';
+        // ===== CONFIGURAÇÕES =====
+        const SHEET_ID = '1xd9Wia3bUkIprpFY1AjVK4Zp7bfWg4dZh8EiPxz4so4';
+        
+        const PANELS = {
+            pnae: {
+                sheet: 'Backup_Remessa_Pnae',
+                color: '#1565C0',
+                name: 'PNAE',
+                icon: 'fa-utensils',
+                remessaCol: 12,          // Coluna M - ler tudo (número ou texto)
+                valorCusteioCol: 11,      // Coluna L
+                finalidadeCol: 14,
+                dataRemessaCol: 13,
+                dataOutraCol: 17,
+                colunaTNumero: null,
+                // Colunas de valor: J(9), K(10), L(11) - NÃO inclui M(12) que é remessa
+                valorColunas: [9, 10, 11],
+                hasCusteioCapital: true
+            },
+            faed: {
+                sheet: 'Backup_Remessa_Faed',
+                color: '#E65100',
+                name: 'FAED',
+                icon: 'fa-hand-holding-heart',
+                remessaCol: 12,          // Coluna M - ler tudo (número ou texto)
+                valorCusteioCol: 11,      // Coluna L
+                finalidadeCol: 14,
+                dataRemessaCol: 13,
+                dataOutraCol: 17,
+                colunaTNumero: null,
+                // Colunas de valor: J(9), K(10), L(11) - NÃO inclui M(12) que é remessa
+                valorColunas: [9, 10, 11],
+                hasCusteioCapital: true
+            },
+            manut: {
+                sheet: 'Backup_Remessa_Manut',
+                color: '#546E7A',
+                name: 'Manutenção',
+                icon: 'fa-tools',
+                remessaCol: 14,          // Coluna O - ler tudo (número ou texto)
+                valorCusteioCol: 12,      // Coluna M
+                valorCapitalCol: 13,      // Coluna N
+                finalidadeCol: 16,
+                dataRemessaCol: 15,
+                dataOutraCol: 23,
+                colunaTNumero: 19,
+                // Colunas de valor: J(9), K(10), L(11), M(12), N(13) - NÃO inclui O(14) que é remessa
+                valorColunas: [9, 10, 11, 12, 13],
+                hasCusteioCapital: true
+            }
+        };
 
-        let abaAtual = 'Backup_Remessa_Pnae';
-        let dadosCarregados = [];
-        let filtroRemessaSelecionada = null;
+        const ITEMS_PER_PAGE = 100;
+        const DEBOUNCE_DELAY = 300;
 
-        // MAPEAR COLUNA DE REMESSA:
-        // Coluna M = Índice 12 (PNAE e FAED)
-        // Coluna O = Índice 14 (Manutenção)
-        function obterIndiceRemessa(nomeAba) {
-            return (nomeAba === 'Backup_Remessa_Manut') ? 14 : 12;
+        let allData = { pnae: [], faed: [], manut: [] };
+        let filteredData = { pnae: [], faed: [], manut: [] };
+        let headers = { pnae: [], faed: [], manut: [] };
+        let visibleColumns = { pnae: [], faed: [], manut: [] };
+        let currentPage = { pnae: 1, faed: 1, manut: 1 };
+        let totalPages = { pnae: 1, faed: 1, manut: 1 };
+        let isProcessing = false;
+        let selectedRemessa = null;
+        let remessaData = {};
+        let isRemessaExpanded = true;
+        let currentTab = 'manut';
+
+        const IDX_NTE = 0;
+        const IDX_MUNICIPIO = 1;
+        const IDX_COD_SEC = 2;
+        const IDX_CARTAO = 8;
+
+        const NUMERIC_COLUMNS = [0, 2, 3, 4, 8, 12, 13, 14, 19];
+
+        function debounce(func, delay) {
+            let timeoutId;
+            return function(...args) {
+                clearTimeout(timeoutId);
+                timeoutId = setTimeout(() => func.apply(this, args), delay);
+            };
         }
 
-        // Lê qualquer tipo de dado (texto como BB DIGITAL ou número)
-        function extrairValorRemessa(linha, nomeAba) {
-            let idx = obterIndiceRemessa(nomeAba);
-            if (linha && linha.length > idx) {
-                let val = linha[idx];
-                if (val !== undefined && val !== null) {
-                    return String(val).trim();
+        function getRemessaCol(panel) {
+            return PANELS[panel]?.remessaCol || 14;
+        }
+
+        function getValorCusteioCol(panel) {
+            return PANELS[panel]?.valorCusteioCol || 11;
+        }
+
+        function getValorCapitalCol(panel) {
+            return PANELS[panel]?.valorCapitalCol || 12;
+        }
+
+        function getFinalidadeCol(panel) {
+            return PANELS[panel]?.finalidadeCol || 14;
+        }
+
+        function getDataRemessaCol(panel) {
+            return PANELS[panel]?.dataRemessaCol || 13;
+        }
+
+        function getDataOutraCol(panel) {
+            return PANELS[panel]?.dataOutraCol || 17;
+        }
+
+        function getColunaTNumero(panel) {
+            return PANELS[panel]?.colunaTNumero || null;
+        }
+
+        function getValorColunas(panel) {
+            return PANELS[panel]?.valorColunas || [];
+        }
+
+        function isNumericColumn(colIdx) {
+            return NUMERIC_COLUMNS.includes(colIdx);
+        }
+
+        function isValorColumn(panel, colIdx) {
+            return getValorColunas(panel).includes(colIdx);
+        }
+
+        // ===== FORMATAÇÃO DE DATA =====
+        function formatDate(value) {
+            if (!value && value !== 0) return '';
+            
+            if (typeof value === 'string') {
+                const match = value.match(/Date\((\d+),(\d+),(\d+)\)/);
+                if (match) {
+                    const year = match[1];
+                    const month = String(parseInt(match[2]) + 1).padStart(2, '0');
+                    const day = String(match[3]).padStart(2, '0');
+                    return `${day}/${month}/${year}`;
+                }
+                
+                const date = new Date(value);
+                if (!isNaN(date.getTime())) {
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const year = date.getFullYear();
+                    return `${day}/${month}/${year}`;
+                }
+                return value;
+            }
+            
+            if (typeof value === 'number' && value > 0) {
+                const date = new Date((value - 25569) * 86400 * 1000);
+                if (!isNaN(date.getTime())) {
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const year = date.getFullYear();
+                    return `${day}/${month}/${year}`;
                 }
             }
-            return "";
+            
+            return value;
         }
 
-        // PARSER CSV INTEGRADO (SEM BIBLIOTECAS EXTERNAS)
-        function parseCSV(text) {
-            let lines = [];
-            let row = [];
-            let inQuotes = false;
-            let current = '';
+        // ===== FORMATAÇÃO DE VALOR MONETÁRIO =====
+        function formatCurrency(value) {
+            if (value === null || value === undefined || value === '') return '';
+            const num = parseFloat(value);
+            if (isNaN(num)) return value;
+            return num.toLocaleString('pt-BR', { 
+                style: 'currency', 
+                currency: 'BRL',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
 
-            for (let i = 0; i < text.length; i++) {
-                let c = text[i];
-                let next = text[i + 1];
+        document.addEventListener('DOMContentLoaded', () => {
+            Object.keys(PANELS).forEach(panel => {
+                loadPanelData(panel);
+            });
 
-                if (c === '"') {
-                    if (inQuotes && next === '"') {
-                        current += '"';
-                        i++;
-                    } else {
-                        inQuotes = !inQuotes;
+            document.querySelectorAll('.search-input').forEach(input => {
+                const debounced = debounce(() => applyFilters(input.dataset.panel), DEBOUNCE_DELAY);
+                input.addEventListener('input', debounced);
+            });
+
+            document.getElementById('filter-nte').addEventListener('change', () => {
+                updateMunicipioDropdown();
+                applyFilters(currentTab);
+            });
+            document.getElementById('filter-municipio').addEventListener('change', () => applyFilters(currentTab));
+            document.getElementById('filter-tipo-valor').addEventListener('change', () => applyFilters(currentTab));
+
+            document.addEventListener('click', (e) => {
+                document.querySelectorAll('.column-toggle-wrapper').forEach(wrapper => {
+                    if (!wrapper.contains(e.target)) {
+                        const dropdown = wrapper.querySelector('.dropdown-menu');
+                        if (dropdown) dropdown.classList.remove('show');
                     }
-                } else if (c === ',' && !inQuotes) {
-                    row.push(current);
-                    current = '';
-                } else if ((c === '\r' || c === '\n') && !inQuotes) {
-                    if (c === '\r' && next === '\n') i++;
-                    row.push(current);
-                    if (row.length > 1 || row[0] !== '') lines.push(row);
-                    row = [];
-                    current = '';
-                } else {
-                    current += c;
-                }
-            }
-            if (current || row.length > 0) {
-                row.push(current);
-                lines.push(row);
-            }
-            return lines;
+                });
+            });
+        });
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const btnShow = document.getElementById('btn-show-sidebar');
+            sidebar.classList.toggle('collapsed');
+            btnShow.classList.toggle('visible', sidebar.classList.contains('collapsed'));
         }
 
-        // BUSCA DADOS DIRETO DA GOOGLE SHEETS
-        async function carregarDadosPlanilha(nomeAba) {
-            const tbody = document.getElementById('tbody-dados');
-            tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;">Lendo aba ${nomeAba}...</td></tr>`;
-
-            const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(nomeAba)}`;
-
-            try {
-                const response = await fetch(url);
-                if (!response.ok) throw new Error("Erro ao acessar planilha");
-
-                const textData = await response.text();
-                let rows = parseCSV(textData);
-
-                // Remove linha de cabeçalho
-                if (rows.length > 0) rows.shift();
-
-                dadosCarregados = rows;
-                processarInterface();
-            } catch (err) {
-                console.warn("Erro ao buscar via fetch. Usando simulação...", err);
-                carregarSimulacao(nomeAba);
-            }
-        }
-
-        // SIMULAÇÃO LOCAL SE NÃO HOUVER SHEET_ID CONFIGURADO
-        function carregarSimulacao(nomeAba) {
-            if (nomeAba === 'Backup_Remessa_Pnae') {
-                dadosCarregados = [
-                    ["NTE-01", "SALVADOR", "RECURSO-01", "1120915", "ESCOLA A", "LUCIMONE DO...", "124065815", "40986900067...", "R$ 21.023,20", "R$ 21.024,00", "R$ 21.024,00", "21024", "845", "27/02/2026", "1ª parcela"],
-                    ["NTE-01", "SALVADOR", "RECURSO-01", "1120915", "ESCOLA B", "LUCIMONE DO...", "124065815", "40986900067...", "R$ 21.023,20", "R$ 21.024,00", "R$ 42.047,00", "42047", "857", "13/03/2026", "2ª parcela"],
-                    ["NTE-01", "SALVADOR", "RECURSO-01", "1120915", "ESCOLA C", "ANA RAQUEL ...", "186241084", "40986900548...", "R$ 21.719,20", "R$ 21.720,00", "R$ 63.767,00", "63767", "BB DIGITAL", "26/05/2026", "3ª parcela"],
-                    ["NTE-01", "SALVADOR", "RECURSO-01", "1120915", "ESCOLA D", "ANA RAQUEL ...", "186241084", "40986900548...", "R$ 21.719,20", "R$ 21.720,00", "R$ 43.439,00", "43439", "897", "01/06/2026", "4ª parcela"],
-                    ["NTE-01", "SALVADOR", "RECURSO-01", "1120915", "ESCOLA E", "ANA RAQUEL ...", "186241084", "40986900548...", "R$ 42.047,00", "R$ 42.047,00", "R$ 85.486,00", "85486", "898", "01/06/2026", "RESGATE"],
-                    ["NTE-01", "SALVADOR", "RECURSO-01", "1120915", "ESCOLA F", "ANA RAQUEL ...", "186241084", "40986900548...", "R$ 21.719,20", "R$ 21.720,00", "R$ 63.767,00", "63767", "899", "08/06/2026", "5ª parcela"],
-                    ["NTE-01", "SALVADOR", "RECURSO-01", "1120915", "ESCOLA G", "ANA RAQUEL ...", "186241084", "40986900548...", "R$ 21.719,20", "R$ 21.720,00", "R$ 85.486,00", "85486", "908", "08/07/2026", "6ª parcela"],
-                    ["NTE-01", "SALVADOR", "RECURSO-01", "1120915", "ESCOLA H", "ANA RAQUEL ...", "186241084", "40986900548...", "R$ 21.719,20", "R$ 21.720,00", "R$ 107.205,00", "107205", "946", "07/08/2026", "7ª parcela"]
-                ];
+        function toggleRemessa() {
+            isRemessaExpanded = !isRemessaExpanded;
+            const body = document.getElementById('remessa-body');
+            const chevron = document.getElementById('remessa-chevron');
+            if (isRemessaExpanded) {
+                body.classList.remove('collapsed');
+                chevron.className = 'fa-solid fa-chevron-up';
             } else {
-                dadosCarregados = [];
+                body.classList.add('collapsed');
+                chevron.className = 'fa-solid fa-chevron-down';
             }
-            processarInterface();
         }
 
-        function trocarAba(nomeAba) {
-            abaAtual = nomeAba;
-            filtroRemessaSelecionada = null;
-
-            document.getElementById('lbl-nome-aba').textContent = nomeAba;
-            document.getElementById('badge-aba-nome').textContent = nomeAba.replace('Backup_Remessa_', '');
-
-            document.querySelectorAll('.tab-item').forEach(btn => btn.classList.remove('active'));
-            if (nomeAba.includes('Pnae')) document.getElementById('tab-pnae').classList.add('active');
-            if (nomeAba.includes('Faed')) document.getElementById('tab-faed').classList.add('active');
-            if (nomeAba.includes('Manut')) document.getElementById('tab-manut').classList.add('active');
-
-            carregarDadosPlanilha(nomeAba);
+        function switchTab(tab) {
+            currentTab = tab;
+            
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`.tab-btn[data-tab="${tab}"]`).classList.add('active');
+            
+            document.querySelectorAll('.panel-content').forEach(p => p.classList.remove('active'));
+            document.getElementById(`panel-${tab}`).classList.add('active');
+            
+            const panelInfo = PANELS[tab];
+            document.getElementById('painel-title').textContent = `Gerador ${panelInfo.name}`;
+            document.getElementById('sheet-name').textContent = panelInfo.sheet;
+            
+            const dot = document.getElementById('status-dot');
+            dot.className = `status-dot ${tab}`;
+            
+            const indicator = document.getElementById('remessa-panel-indicator');
+            indicator.textContent = tab.toUpperCase();
+            indicator.style.background = panelInfo.color;
+            
+            applyFilters(tab);
+            
+            setTimeout(() => initColumnResize(tab), 100);
         }
 
-        function processarInterface() {
-            gerarMenuValidacaoRemessa();
-            renderTable();
+        function loadPanelData(panel) {
+            const sheetName = PANELS[panel].sheet;
+            const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?sheet=${encodeURIComponent(sheetName)}&tqx=out:json`;
+            
+            fetch(url)
+                .then(res => res.text())
+                .then(data => {
+                    const jsonString = data.substring(47, data.length - 2);
+                    const json = JSON.parse(jsonString);
+
+                    headers[panel] = json.table.cols.map((col, idx) => col.label || `Coluna ${idx + 1}`);
+                    
+                    allData[panel] = json.table.rows.map(row => {
+                        return row.c.map(cell => (cell && cell.v !== null && cell.v !== undefined) ? cell.v : '');
+                    });
+
+                    visibleColumns[panel] = new Array(headers[panel].length).fill(true);
+
+                    buildColumnDropdown(panel);
+                    
+                    if (panel === 'manut') {
+                        populateNteDropdown();
+                        updateMunicipioDropdown();
+                    }
+                    
+                    renderHeader(panel);
+                    applyFilters(panel);
+
+                    const loading = document.querySelector(`.${panel}-loading`);
+                    const table = document.querySelector(`.${panel}-table`);
+                    const pagination = document.querySelector(`.${panel}-pagination`);
+                    if (loading) loading.style.display = 'none';
+                    if (table) table.style.display = 'table';
+                    if (pagination) pagination.style.display = 'flex';
+                    
+                    setTimeout(() => initColumnResize(panel), 200);
+                })
+                .catch(err => {
+                    console.error(`Erro ao carregar ${panel}:`, err);
+                    const loading = document.querySelector(`.${panel}-loading`);
+                    if (loading) {
+                        loading.innerHTML = `
+                            <i class="fa-solid fa-triangle-exclamation" style="font-size: 2rem; color: #e53935;"></i>
+                            <span>Erro ao carregar dados.</span>
+                            <button onclick="loadPanelData('${panel}')" style="padding: 8px 16px; background: var(--sidebar-header); color: #fff; border: none; border-radius: 6px; cursor: pointer; margin-top: 10px;">Tentar novamente</button>
+                        `;
+                    }
+                });
         }
 
-        function gerarMenuValidacaoRemessa() {
-            const container = document.getElementById('container-lista-remessa');
-            const contagem = {};
+        function populateNteDropdown() {
+            const nteSelect = document.getElementById('filter-nte');
+            nteSelect.innerHTML = '<option value="">Todos os NTEs</option>';
 
-            dadosCarregados.forEach(row => {
-                let rem = extrairValorRemessa(row, abaAtual);
-                if (rem && rem.toLowerCase() !== 'remessa') {
-                    contagem[rem] = (contagem[rem] || 0) + 1;
+            const ntesSet = new Set();
+            allData.manut.forEach(row => {
+                const val = row[IDX_NTE];
+                if (val !== undefined && val !== '') {
+                    ntesSet.add(val.toString().trim());
                 }
             });
 
-            const chaves = Object.keys(contagem);
-            document.getElementById('total-itens-remessa').textContent = chaves.length;
-            document.getElementById('label-total-itens').textContent = chaves.length;
+            const sortedNtes = Array.from(ntesSet).sort((a, b) => {
+                const numA = parseInt(a), numB = parseInt(b);
+                if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+                return a.localeCompare(b);
+            });
 
-            if (chaves.length === 0) {
-                container.innerHTML = `<div style="text-align:center; padding:8px; font-size:0.75rem;">Sem remessas.</div>`;
+            sortedNtes.forEach(nte => {
+                const opt = document.createElement('option');
+                opt.value = nte;
+                opt.textContent = `NTE ${nte.padStart(2, '0')}`;
+                nteSelect.appendChild(opt);
+            });
+        }
+
+        function updateMunicipioDropdown() {
+            const selectedNte = document.getElementById('filter-nte').value;
+            const muniSelect = document.getElementById('filter-municipio');
+            muniSelect.innerHTML = '<option value="">Todos os Municípios</option>';
+
+            const muniSet = new Set();
+            allData.manut.forEach(row => {
+                const rowNte = row[IDX_NTE] ? row[IDX_NTE].toString().trim() : '';
+                const rowMuni = row[IDX_MUNICIPIO] ? row[IDX_MUNICIPIO].toString().trim() : '';
+
+                if (rowMuni !== '') {
+                    if (!selectedNte || rowNte === selectedNte) {
+                        muniSet.add(rowMuni);
+                    }
+                }
+            });
+
+            const sortedMuni = Array.from(muniSet).sort((a, b) => a.localeCompare(b));
+            sortedMuni.forEach(muni => {
+                const opt = document.createElement('option');
+                opt.value = muni;
+                opt.textContent = muni;
+                muniSelect.appendChild(opt);
+            });
+        }
+
+        function buildColumnDropdown(panel) {
+            const dropdown = document.getElementById(`dropdown-${panel}`);
+            if (!dropdown) return;
+            
+            dropdown.innerHTML = `
+                <div class="dropdown-header">
+                    <span>Selecionar Colunas</span>
+                    <label style="font-size: 0.7rem; cursor: pointer;">
+                        <input type="checkbox" checked onchange="toggleAllColumns('${panel}', this.checked)">
+                        Todas
+                    </label>
+                </div>
+            `;
+
+            headers[panel].forEach((h, idx) => {
+                const item = document.createElement('label');
+                item.className = 'checkbox-item';
+                item.innerHTML = `
+                    <input type="checkbox" checked data-index="${idx}" onchange="toggleSingleColumn('${panel}', ${idx}, this.checked)">
+                    <span>${h || `Coluna ${idx+1}`}</span>
+                `;
+                dropdown.appendChild(item);
+            });
+        }
+
+        function toggleDropdown(panel) {
+            document.getElementById(`dropdown-${panel}`).classList.toggle('show');
+        }
+
+        function toggleSingleColumn(panel, index, isChecked) {
+            visibleColumns[panel][index] = isChecked;
+            renderHeader(panel);
+            applyFilters(panel);
+        }
+
+        function toggleAllColumns(panel, isChecked) {
+            visibleColumns[panel].fill(isChecked);
+            const checkboxes = document.querySelectorAll(`#dropdown-${panel} input[type="checkbox"]`);
+            checkboxes.forEach(cb => cb.checked = isChecked);
+            renderHeader(panel);
+            applyFilters(panel);
+        }
+
+        function renderHeader(panel) {
+            const table = document.querySelector(`.${panel}-table`);
+            if (!table) return;
+            const thead = table.querySelector('thead tr');
+            thead.innerHTML = '';
+            headers[panel].forEach((h, idx) => {
+                if (visibleColumns[panel][idx]) {
+                    const th = document.createElement('th');
+                    th.textContent = h || `Coluna ${idx+1}`;
+                    th.style.width = '120px';
+                    th.style.minWidth = '60px';
+                    th.style.maxWidth = '400px';
+                    thead.appendChild(th);
+                }
+            });
+            
+            setTimeout(() => initColumnResize(panel), 50);
+        }
+
+        // ===== REDIMENSIONAMENTO DE COLUNAS =====
+        let columnResize = {
+            isResizing: false,
+            currentTh: null,
+            startX: 0,
+            startWidth: 0,
+            currentPanel: null
+        };
+
+        function initColumnResize(panel) {
+            const table = document.querySelector(`.${panel}-table`);
+            if (!table) return;
+            
+            const ths = table.querySelectorAll('thead th');
+            
+            ths.forEach(th => {
+                const oldHandle = th.querySelector('.resize-handle');
+                if (oldHandle) oldHandle.remove();
+                
+                const handle = document.createElement('div');
+                handle.className = 'resize-handle';
+                handle.dataset.panel = panel;
+                
+                handle.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    columnResize.isResizing = true;
+                    columnResize.currentTh = th;
+                    columnResize.currentPanel = panel;
+                    columnResize.startX = e.clientX;
+                    columnResize.startWidth = th.offsetWidth;
+                    
+                    handle.classList.add('active');
+                    document.body.style.cursor = 'col-resize';
+                    document.body.style.userSelect = 'none';
+                    
+                    document.querySelectorAll('td, th').forEach(el => {
+                        el.style.userSelect = 'none';
+                    });
+                });
+                
+                th.appendChild(handle);
+            });
+        }
+
+        document.addEventListener('mousemove', (e) => {
+            if (!columnResize.isResizing) return;
+            
+            const th = columnResize.currentTh;
+            const panel = columnResize.currentPanel;
+            if (!th || !panel) return;
+            
+            const diff = e.clientX - columnResize.startX;
+            const newWidth = Math.max(60, columnResize.startWidth + diff);
+            
+            th.style.width = newWidth + 'px';
+            th.style.minWidth = newWidth + 'px';
+            th.style.maxWidth = newWidth + 'px';
+            
+            const table = th.closest('table');
+            if (table) {
+                const colIndex = Array.from(th.parentElement.children).indexOf(th);
+                const rows = table.querySelectorAll('tbody tr');
+                rows.forEach(row => {
+                    const td = row.children[colIndex];
+                    if (td) {
+                        td.style.width = newWidth + 'px';
+                        td.style.minWidth = newWidth + 'px';
+                        td.style.maxWidth = newWidth + 'px';
+                    }
+                });
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (columnResize.isResizing) {
+                columnResize.isResizing = false;
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+                
+                document.querySelectorAll('td, th').forEach(el => {
+                    el.style.userSelect = '';
+                });
+                
+                const handle = document.querySelector('.resize-handle.active');
+                if (handle) handle.classList.remove('active');
+                
+                columnResize.currentTh = null;
+                columnResize.currentPanel = null;
+            }
+        });
+
+        function updateRemessaList(panel) {
+            const data = filteredData[panel] || [];
+            const remessaCol = getRemessaCol(panel);
+            
+            remessaData = {};
+            
+            data.forEach(row => {
+                const remessaVal = row[remessaCol] !== undefined && row[remessaCol] !== '' ? 
+                    row[remessaCol].toString().trim() : '';
+                if (remessaVal !== '') {
+                    remessaData[remessaVal] = (remessaData[remessaVal] || 0) + 1;
+                }
+            });
+
+            const sortedKeys = Object.keys(remessaData).sort((a, b) => {
+                const numA = parseFloat(a);
+                const numB = parseFloat(b);
+                if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+                return a.localeCompare(b);
+            });
+            
+            const remessaList = document.getElementById('remessa-list');
+            const totalItems = Object.keys(remessaData).length;
+            
+            document.getElementById('remessa-badge-count').textContent = totalItems;
+            document.getElementById('remessa-total-value').textContent = totalItems;
+            
+            if (sortedKeys.length === 0) {
+                remessaList.innerHTML = `<div class="remessa-empty">Nenhum dado na coluna ${String.fromCharCode(65 + remessaCol)}</div>`;
                 return;
             }
 
             let html = '';
-            chaves.sort().forEach(chave => {
-                let activeClass = (filtroRemessaSelecionada === chave) ? 'active' : '';
+            sortedKeys.forEach(key => {
+                const count = remessaData[key];
+                let badgeClass = 'success';
+                if (count > 100) badgeClass = 'danger';
+                else if (count > 50) badgeClass = 'warning';
+                
+                const isActive = selectedRemessa === key ? 'active' : '';
+                
                 html += `
-                    <div class="remessa-item ${activeClass}" onclick="selecionarFiltroRemessa('${chave}')">
-                        <span>${chave}</span>
-                        <span class="badge-qty">${contagem[chave]}</span>
+                    <div class="remessa-item ${isActive}" data-value="${key}" onclick="selectRemessa('${key}')">
+                        <span class="label">${key}</span>
+                        <span class="badge ${badgeClass}">${count}</span>
                     </div>
                 `;
             });
 
-            container.innerHTML = html;
+            remessaList.innerHTML = html;
         }
 
-        function selecionarFiltroRemessa(chave) {
-            filtroRemessaSelecionada = (filtroRemessaSelecionada === chave) ? null : chave;
-            gerarMenuValidacaoRemessa();
-            renderTable();
-        }
-
-        function filtrarListaRemessasMenu() {
-            let term = document.getElementById('input-busca-remessa').value.toLowerCase();
-            document.querySelectorAll('#container-lista-remessa .remessa-item').forEach(el => {
-                let txt = el.querySelector('span').textContent.toLowerCase();
-                el.style.display = txt.includes(term) ? 'flex' : 'none';
+        function filterRemessaList() {
+            const searchTerm = document.getElementById('remessa-search-input').value.toLowerCase();
+            document.querySelectorAll('.remessa-item').forEach(item => {
+                const label = item.querySelector('.label').textContent.toLowerCase();
+                item.style.display = label.includes(searchTerm) ? 'flex' : 'none';
             });
         }
 
-        function renderTable() {
-            const tbody = document.getElementById('tbody-dados');
-            const codSec = document.getElementById('input-cod-sec').value.toLowerCase().trim();
-            const cartao = document.getElementById('input-cartao').value.toLowerCase().trim();
-            const finalidade = document.getElementById('input-finalidade').value.toLowerCase().trim();
+        function selectRemessa(value) {
+            selectedRemessa = selectedRemessa === value ? null : value;
+            document.querySelectorAll('.remessa-item').forEach(el => {
+                el.classList.toggle('active', el.dataset.value === selectedRemessa);
+            });
+            applyFilters(currentTab);
+        }
 
-            let idxRem = obterIndiceRemessa(abaAtual);
+        function applyFilters(panel) {
+            if (!panel) panel = currentTab;
+            if (isProcessing || allData[panel].length === 0) return;
+            
+            isProcessing = true;
 
-            let dadosFiltrados = dadosCarregados.filter(row => {
-                let remessaVal = extrairValorRemessa(row, abaAtual);
-                if (remessaVal === 'REMESSA' || remessaVal === 'Remessa') return false;
+            setTimeout(() => {
+                const nteVal = document.getElementById('filter-nte').value;
+                const muniVal = document.getElementById('filter-municipio').value.toLowerCase();
+                const tipoValorVal = document.getElementById('filter-tipo-valor').value;
+                const remessaCol = getRemessaCol(panel);
+                const valorCusteioCol = getValorCusteioCol(panel);
+                const valorCapitalCol = getValorCapitalCol(panel);
+                const finalidadeCol = getFinalidadeCol(panel);
+                
+                const searchInputs = document.querySelectorAll(`.search-input[data-panel="${panel}"]`);
+                let searchCodSec = '';
+                let searchCartao = '';
+                let searchFinalidade = '';
+                
+                searchInputs.forEach(input => {
+                    const field = input.dataset.field;
+                    const value = input.value.trim().toLowerCase();
+                    if (field === 'codsec') searchCodSec = value;
+                    else if (field === 'cartao') searchCartao = value;
+                    else if (field === 'finalidade') searchFinalidade = value;
+                });
 
-                if (filtroRemessaSelecionada && remessaVal !== filtroRemessaSelecionada) {
-                    return false;
-                }
+                let totalCusteio = 0;
+                let totalCapital = 0;
+                let count = 0;
 
-                if (codSec && !String(row[3] || '').toLowerCase().includes(codSec)) return false;
-                if (cartao && !String(row[7] || '').toLowerCase().includes(cartao)) return false;
-                if (finalidade && !String(row[14] || row[13] || '').toLowerCase().includes(finalidade)) return false;
+                filteredData[panel] = allData[panel].filter(row => {
+                    const nte = row[IDX_NTE] ? row[IDX_NTE].toString().trim() : '';
+                    const muni = row[IDX_MUNICIPIO] ? row[IDX_MUNICIPIO].toString().trim().toLowerCase() : '';
+                    const codSec = row[IDX_COD_SEC] ? row[IDX_COD_SEC].toString().trim().toLowerCase() : '';
+                    const cartao = row[IDX_CARTAO] ? row[IDX_CARTAO].toString().trim().toLowerCase() : '';
+                    const remessa = row[remessaCol] !== undefined && row[remessaCol] !== '' ? 
+                        row[remessaCol].toString().trim() : '';
+                    const finalidade = row[finalidadeCol] ? row[finalidadeCol].toString().trim().toLowerCase() : '';
 
-                return true;
+                    const custeio = parseFloat(row[valorCusteioCol]) || 0;
+                    const capital = parseFloat(row[valorCapitalCol]) || 0;
+
+                    const matchNte = !nteVal || nte === nteVal;
+                    const matchMuni = !muniVal || muni === muniVal;
+                    const matchCodSec = !searchCodSec || codSec.includes(searchCodSec);
+                    const matchCartao = !searchCartao || cartao.includes(searchCartao);
+                    const matchFinalidade = !searchFinalidade || finalidade.includes(searchFinalidade);
+                    const matchRemessa = !selectedRemessa || remessa === selectedRemessa;
+
+                    let matchTipoValor = true;
+                    if (tipoValorVal === 'custeio') matchTipoValor = custeio > 0;
+                    if (tipoValorVal === 'capital') matchTipoValor = capital > 0;
+
+                    const match = matchNte && matchMuni && matchCodSec && matchCartao && matchFinalidade && matchRemessa && matchTipoValor;
+                    
+                    if (match) {
+                        count++;
+                        totalCusteio += custeio;
+                        totalCapital += capital;
+                    }
+                    
+                    return match;
+                });
+
+                const prefix = panel;
+                document.querySelector(`.${prefix}-total`).textContent = count;
+                document.querySelector(`.${prefix}-custeio`).textContent = totalCusteio.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                document.querySelector(`.${prefix}-capital`).textContent = totalCapital.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                document.querySelector(`.${prefix}-geral`).textContent = (totalCusteio + totalCapital).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+                document.querySelector(`.${prefix}-visible`).textContent = count;
+                document.querySelector(`.${prefix}-total-count`).textContent = allData[panel].length;
+
+                currentPage[panel] = 1;
+                renderPage(panel);
+                
+                updateRemessaList(panel);
+
+                isProcessing = false;
+            }, 50);
+        }
+
+        function renderPage(panel) {
+            const totalItems = filteredData[panel].length;
+            totalPages[panel] = Math.ceil(totalItems / ITEMS_PER_PAGE) || 1;
+            
+            if (currentPage[panel] > totalPages[panel]) currentPage[panel] = totalPages[panel];
+            if (currentPage[panel] < 1) currentPage[panel] = 1;
+
+            const start = (currentPage[panel] - 1) * ITEMS_PER_PAGE;
+            const end = Math.min(start + ITEMS_PER_PAGE, totalItems);
+            const pageData = filteredData[panel].slice(start, end);
+
+            const tbody = document.querySelector(`.${panel}-table tbody`);
+            tbody.innerHTML = '';
+
+            const dataRemessaCol = getDataRemessaCol(panel);
+            const dataOutraCol = getDataOutraCol(panel);
+            const colunaTNumero = getColunaTNumero(panel);
+            const valorColunas = getValorColunas(panel);
+            const remessaCol = getRemessaCol(panel);
+
+            pageData.forEach(row => {
+                const tr = document.createElement('tr');
+                row.forEach((cellVal, colIdx) => {
+                    if (visibleColumns[panel][colIdx]) {
+                        const td = document.createElement('td');
+                        
+                        // 1. VERIFICA SE É COLUNA DE DATA
+                        if (colIdx === dataRemessaCol || colIdx === dataOutraCol) {
+                            td.textContent = formatDate(cellVal);
+                        } 
+                        // 2. VERIFICA SE É A COLUNA DE REMESSA (M do PNAE/FAED ou O da Manut)
+                        //    EXIBE O VALOR ORIGINAL SEM FORMATAÇÃO
+                        else if (colIdx === remessaCol) {
+                            td.textContent = cellVal !== null && cellVal !== undefined ? cellVal : '';
+                        }
+                        // 3. VERIFICA SE É COLUNA DE VALOR MONETÁRIO
+                        else if (valorColunas.includes(colIdx)) {
+                            td.textContent = formatCurrency(cellVal);
+                        }
+                        // 4. VERIFICA SE É A COLUNA T DA MANUTENÇÃO (NÚMERO)
+                        else if (colIdx === colunaTNumero) {
+                            td.textContent = cellVal !== null && cellVal !== undefined ? cellVal : '';
+                        }
+                        // 5. VERIFICA SE É COLUNA NUMÉRICA (NTE, CÓDIGOS, ETC.)
+                        else if (isNumericColumn(colIdx)) {
+                            td.textContent = cellVal !== null && cellVal !== undefined ? cellVal : '';
+                        } 
+                        // 6. TEXTO NORMAL
+                        else {
+                            td.textContent = cellVal !== null && cellVal !== undefined ? cellVal : '';
+                        }
+                        td.title = td.textContent;
+                        tr.appendChild(td);
+                    }
+                });
+                tbody.appendChild(tr);
             });
 
-            document.getElementById('metric-total-registros').textContent = dadosFiltrados.length;
-            document.getElementById('lbl-exibindo-qtd').textContent = dadosFiltrados.length;
-            document.getElementById('lbl-total-qtd').textContent = dadosCarregados.length;
+            const startDisplay = totalItems === 0 ? 0 : start + 1;
+            const endDisplay = Math.min(end, totalItems);
+            
+            document.querySelector(`.${panel}-info`).textContent = 
+                totalItems === 0 ? 'Nenhum registro encontrado' :
+                `Mostrando ${startDisplay}-${endDisplay} de ${totalItems}`;
+            
+            document.querySelector(`.${panel}-page`).textContent = `Página ${currentPage[panel]} de ${totalPages[panel]}`;
+            
+            document.querySelector(`.${panel}-prev`).disabled = currentPage[panel] <= 1;
+            document.querySelector(`.${panel}-next`).disabled = currentPage[panel] >= totalPages[panel];
+        }
 
-            if (dadosFiltrados.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;">Nenhum registro encontrado.</td></tr>`;
-                return;
+        function changePage(panel, delta) {
+            const newPage = currentPage[panel] + delta;
+            if (newPage >= 1 && newPage <= totalPages[panel]) {
+                currentPage[panel] = newPage;
+                renderPage(panel);
+                const container = document.querySelector(`.${panel}-table`)?.closest('.table-container');
+                if (container) container.scrollTop = 0;
             }
-
-            let html = '';
-            dadosFiltrados.forEach(row => {
-                let remessaVal = extrairValorRemessa(row, abaAtual);
-                let isText = isNaN(remessaVal) && remessaVal !== '';
-
-                let remessaHtml = isText 
-                    ? `<span class="cell-remessa-text">${remessaVal}</span>` 
-                    : `<strong>${remessaVal}</strong>`;
-
-                // Posições baseadas nas colunas reais da aba
-                html += `
-                    <tr>
-                        <td>${row[5] || ''}</td>
-                        <td>${row[6] || ''}</td>
-                        <td>${row[7] || ''}</td>
-                        <td>${row[8] || ''}</td>
-                        <td>${row[9] || ''}</td>
-                        <td>${row[10] || ''}</td>
-                        <td>${remessaHtml}</td>
-                        <td>${row[idxRem + 1] || ''}</td>
-                        <td>${row[idxRem + 2] || ''}</td>
-                    </tr>
-                `;
-            });
-
-            tbody.innerHTML = html;
         }
 
-        function limparFiltros() {
-            filtroRemessaSelecionada = null;
-            document.getElementById('input-cod-sec').value = '';
-            document.getElementById('input-cartao').value = '';
-            document.getElementById('input-finalidade').value = '';
-            document.getElementById('input-busca-remessa').value = '';
-            filtrarListaRemessasMenu();
-            gerarMenuValidacaoRemessa();
-            renderTable();
+        function resetAllFilters() {
+            document.getElementById('filter-nte').value = '';
+            document.getElementById('filter-municipio').value = '';
+            document.getElementById('filter-tipo-valor').value = 'todos';
+            
+            document.querySelectorAll('.search-input').forEach(input => input.value = '');
+            document.getElementById('remessa-search-input').value = '';
+            
+            selectedRemessa = null;
+            document.querySelectorAll('.remessa-item').forEach(el => el.classList.remove('active'));
+            
+            updateMunicipioDropdown();
+            applyFilters(currentTab);
+            filterRemessaList();
         }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            trocarAba('Backup_Remessa_Pnae');
-        });
     </script>
 </body>
 </html>
