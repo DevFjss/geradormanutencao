@@ -171,22 +171,78 @@
             margin: 8px 0 14px 0;
             border: 2px solid #a5d6a7;
             flex-shrink: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
         }
 
-        .remessa-section .section-title {
+        .remessa-section.collapsed {
+            padding: 10px 16px;
+        }
+
+        .remessa-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .remessa-header .section-title {
             font-size: 0.75rem;
             font-weight: 700;
             color: var(--primary);
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            margin-bottom: 10px;
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
-        .remessa-section .section-title i {
+        .remessa-header .section-title i {
             font-size: 0.9rem;
+        }
+
+        .remessa-toggle-btn {
+            background: transparent;
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .remessa-toggle-btn:hover {
+            background: #e8f5e9;
+        }
+
+        .remessa-toggle-btn .badge-count {
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .remessa-body {
+            overflow: hidden;
+            transition: all 0.3s ease;
+            max-height: 500px;
+        }
+
+        .remessa-body.collapsed {
+            max-height: 0;
+            padding-top: 0;
+            margin-top: 0;
+        }
+
+        .remessa-body-inner {
+            padding-top: 10px;
         }
 
         .remessa-search {
@@ -219,6 +275,25 @@
             font-size: 0.8rem;
         }
 
+        .remessa-list-container {
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        .remessa-list-container::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .remessa-list-container::-webkit-scrollbar-track {
+            background: #f0f4f1;
+            border-radius: 4px;
+        }
+
+        .remessa-list-container::-webkit-scrollbar-thumb {
+            background: #a5d6a7;
+            border-radius: 4px;
+        }
+
         .remessa-item {
             display: flex;
             justify-content: space-between;
@@ -244,6 +319,7 @@
             font-size: 0.75rem;
             font-weight: 500;
             color: var(--text-dark);
+            word-break: break-all;
         }
 
         .remessa-item .badge {
@@ -255,6 +331,8 @@
             color: #fff;
             min-width: 24px;
             text-align: center;
+            flex-shrink: 0;
+            margin-left: 8px;
         }
 
         .remessa-item .badge.warning {
@@ -789,20 +867,33 @@
 
         <!-- ===== SEÇÃO REMESSA ===== -->
         <div class="remessa-section" id="remessa-section">
-            <div class="section-title">
-                <i class="fa-solid fa-clipboard-list"></i>
-                Validação Remessa (Coluna O)
+            <div class="remessa-header" onclick="toggleRemessa()">
+                <div class="section-title">
+                    <i class="fa-solid fa-clipboard-list"></i>
+                    Validação Remessa
+                </div>
+                <button class="remessa-toggle-btn" id="remessa-toggle-btn">
+                    <span class="badge-count" id="remessa-badge-count">0</span>
+                    <i class="fa-solid fa-chevron-up" id="remessa-chevron"></i>
+                </button>
             </div>
-            <div class="remessa-search">
-                <i class="fa-solid fa-search"></i>
-                <input type="text" id="remessa-search-input" placeholder="Filtrar remessa..." oninput="filterRemessaList()">
-            </div>
-            <div id="remessa-list">
-                <div class="remessa-empty">Carregando dados...</div>
-            </div>
-            <div class="remessa-total" id="remessa-total">
-                <span class="label">Total de Itens</span>
-                <span class="value" id="remessa-total-value">0</span>
+            
+            <div class="remessa-body" id="remessa-body">
+                <div class="remessa-body-inner">
+                    <div class="remessa-search">
+                        <i class="fa-solid fa-search"></i>
+                        <input type="text" id="remessa-search-input" placeholder="Filtrar remessa..." oninput="filterRemessaList()">
+                    </div>
+                    <div class="remessa-list-container" id="remessa-list-container">
+                        <div id="remessa-list">
+                            <div class="remessa-empty">Carregando dados...</div>
+                        </div>
+                    </div>
+                    <div class="remessa-total" id="remessa-total">
+                        <span class="label">Total de Itens</span>
+                        <span class="value" id="remessa-total-value">0</span>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -935,6 +1026,7 @@
         let isProcessing = false;
         let selectedRemessa = null;
         let remessaData = {};
+        let isRemessaExpanded = true;
 
         // Índices das colunas
         const IDX_NTE = 0;
@@ -943,7 +1035,7 @@
         const IDX_CARTAO = 8;
         const IDX_VALOR_CUSTEIO = 12;
         const IDX_VALOR_CAPITAL = 13;
-        const IDX_REMESSA = 14; // Coluna O (0-based: 14)
+        const IDX_REMESSA = 14;
 
         // ===== DEBOUNCE =====
         function debounce(func, delay) {
@@ -988,6 +1080,21 @@
             
             sidebar.classList.toggle('collapsed');
             btnShow.classList.toggle('visible', sidebar.classList.contains('collapsed'));
+        }
+
+        // ===== TOGGLE REMESSA =====
+        function toggleRemessa() {
+            isRemessaExpanded = !isRemessaExpanded;
+            const body = document.getElementById('remessa-body');
+            const chevron = document.getElementById('remessa-chevron');
+            
+            if (isRemessaExpanded) {
+                body.classList.remove('collapsed');
+                chevron.className = 'fa-solid fa-chevron-up';
+            } else {
+                body.classList.add('collapsed');
+                chevron.className = 'fa-solid fa-chevron-down';
+            }
         }
 
         // ===== CARREGAR DADOS =====
@@ -1138,14 +1245,16 @@
                 }
             });
 
-            // Ordenar por valor
             const sortedKeys = Object.keys(remessaData).sort();
             
             const remessaList = document.getElementById('remessa-list');
+            const totalItems = Object.keys(remessaData).length;
+            
+            document.getElementById('remessa-badge-count').textContent = totalItems;
+            document.getElementById('remessa-total-value').textContent = totalItems;
             
             if (sortedKeys.length === 0) {
                 remessaList.innerHTML = `<div class="remessa-empty">Nenhum dado na coluna O</div>`;
-                document.getElementById('remessa-total-value').textContent = '0';
                 return;
             }
 
@@ -1156,8 +1265,10 @@
                 if (count > 100) badgeClass = 'danger';
                 else if (count > 50) badgeClass = 'warning';
                 
+                const isActive = selectedRemessa === key ? 'active' : '';
+                
                 html += `
-                    <div class="remessa-item" data-value="${key}" onclick="selectRemessa('${key}')">
+                    <div class="remessa-item ${isActive}" data-value="${key}" onclick="selectRemessa('${key}')">
                         <span class="label">${key}</span>
                         <span class="badge ${badgeClass}">${count}</span>
                     </div>
@@ -1165,16 +1276,6 @@
             });
 
             remessaList.innerHTML = html;
-            document.getElementById('remessa-total-value').textContent = Object.keys(remessaData).length;
-            
-            // Destacar item selecionado
-            if (selectedRemessa) {
-                document.querySelectorAll('.remessa-item').forEach(el => {
-                    if (el.dataset.value === selectedRemessa) {
-                        el.classList.add('active');
-                    }
-                });
-            }
         }
 
         // ===== FILTRAR LISTA REMESSA =====
