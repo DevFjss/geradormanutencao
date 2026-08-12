@@ -1308,6 +1308,9 @@
         // Colunas que devem ser tratadas como numéricas (sem formatação de moeda)
         const NUMERIC_COLUMNS = [0, 2, 3, 4, 8, 12, 13, 14, 19];
 
+        // Campos de busca que devem ser sincronizados entre os 3 painéis
+        const SYNCED_FIELDS = ['codsec'];
+
         function debounce(func, delay) {
             let timeoutId;
             return function(...args) {
@@ -1411,8 +1414,30 @@
             });
 
             document.querySelectorAll('.search-input').forEach(input => {
-                const debounced = debounce(() => applyFilters(input.dataset.panel), DEBOUNCE_DELAY);
-                input.addEventListener('input', debounced);
+                const debouncedFilter = debounce((p) => applyFilters(p), DEBOUNCE_DELAY);
+
+                input.addEventListener('input', () => {
+                    const field = input.dataset.field;
+                    const panel = input.dataset.panel;
+
+                    // ===== SINCRONIZAÇÃO ENTRE PAINÉIS (PNAE / FAED / MANUT) =====
+                    // Quando o campo alterado é um campo sincronizado (ex: Código SEC),
+                    // replica o valor digitado para o mesmo campo nos outros painéis.
+                    if (SYNCED_FIELDS.includes(field)) {
+                        const value = input.value;
+                        document.querySelectorAll(`.search-input[data-field="${field}"]`).forEach(otherInput => {
+                            if (otherInput !== input) {
+                                otherInput.value = value;
+                            }
+                        });
+
+                        // Reaplica os filtros em todos os painéis para manter os totais
+                        // e a lista de remessa sempre coerentes, mesmo nas abas ocultas.
+                        Object.keys(PANELS).forEach(p => debouncedFilter(p));
+                    } else {
+                        debouncedFilter(panel);
+                    }
+                });
             });
 
             document.getElementById('filter-nte').addEventListener('change', () => {
@@ -1832,90 +1857,86 @@
 
         function applyFilters(panel) {
             if (!panel) panel = currentTab;
-            if (isProcessing || allData[panel].length === 0) return;
-            
-            isProcessing = true;
+            if (allData[panel].length === 0) return;
 
-            setTimeout(() => {
-                const nteVal = document.getElementById('filter-nte').value;
-                const muniVal = document.getElementById('filter-municipio').value.toLowerCase();
-                const tipoValorVal = document.getElementById('filter-tipo-valor').value;
-                const remessaCol = getRemessaCol(panel);
-                const valorCusteioCol = getValorCusteioCol(panel);
-                const valorCapitalCol = getValorCapitalCol(panel);
-                const finalidadeCol = getFinalidadeCol(panel);
-                
-                const searchInputs = document.querySelectorAll(`.search-input[data-panel="${panel}"]`);
-                let searchCodSec = '';
-                let searchCartao = '';
-                let searchFinalidade = '';
-                
-                searchInputs.forEach(input => {
-                    const field = input.dataset.field;
-                    const value = input.value.trim().toLowerCase();
-                    if (field === 'codsec') searchCodSec = value;
-                    else if (field === 'cartao') searchCartao = value;
-                    else if (field === 'finalidade') searchFinalidade = value;
-                });
+            const nteVal = document.getElementById('filter-nte').value;
+            const muniVal = document.getElementById('filter-municipio').value.toLowerCase();
+            const tipoValorVal = document.getElementById('filter-tipo-valor').value;
+            const remessaCol = getRemessaCol(panel);
+            const valorCusteioCol = getValorCusteioCol(panel);
+            const valorCapitalCol = getValorCapitalCol(panel);
+            const finalidadeCol = getFinalidadeCol(panel);
 
-                let totalCusteio = 0;
-                let totalCapital = 0;
-                let count = 0;
+            const searchInputs = document.querySelectorAll(`.search-input[data-panel="${panel}"]`);
+            let searchCodSec = '';
+            let searchCartao = '';
+            let searchFinalidade = '';
 
-                filteredData[panel] = allData[panel].filter(row => {
-                    const nte = row[IDX_NTE] ? String(row[IDX_NTE]).trim() : '';
-                    const muni = row[IDX_MUNICIPIO] ? String(row[IDX_MUNICIPIO]).trim().toLowerCase() : '';
-                    const codSec = row[IDX_COD_SEC] ? String(row[IDX_COD_SEC]).trim().toLowerCase() : '';
-                    const cartao = row[IDX_CARTAO] ? String(row[IDX_CARTAO]).trim().toLowerCase() : '';
-                    
-                    // Pega o valor da remessa garantindo que seja string
-                    const rawRemessa = row[remessaCol];
-                    const remessa = (rawRemessa !== undefined && rawRemessa !== null && rawRemessa !== '') ? 
-                        String(rawRemessa).trim() : '';
-                    
-                    const finalidade = row[finalidadeCol] ? String(row[finalidadeCol]).trim().toLowerCase() : '';
+            searchInputs.forEach(input => {
+                const field = input.dataset.field;
+                const value = input.value.trim().toLowerCase();
+                if (field === 'codsec') searchCodSec = value;
+                else if (field === 'cartao') searchCartao = value;
+                else if (field === 'finalidade') searchFinalidade = value;
+            });
 
-                    const custeio = parseFloat(String(row[valorCusteioCol]).replace(',', '.')) || 0;
-                    const capital = parseFloat(String(row[valorCapitalCol]).replace(',', '.')) || 0;
+            let totalCusteio = 0;
+            let totalCapital = 0;
+            let count = 0;
 
-                    const matchNte = !nteVal || nte === nteVal;
-                    const matchMuni = !muniVal || muni === muniVal;
-                    const matchCodSec = !searchCodSec || codSec.includes(searchCodSec);
-                    const matchCartao = !searchCartao || cartao.includes(searchCartao);
-                    const matchFinalidade = !searchFinalidade || finalidade.includes(searchFinalidade);
-                    const matchRemessa = !selectedRemessa || remessa === selectedRemessa;
+            filteredData[panel] = allData[panel].filter(row => {
+                const nte = row[IDX_NTE] ? String(row[IDX_NTE]).trim() : '';
+                const muni = row[IDX_MUNICIPIO] ? String(row[IDX_MUNICIPIO]).trim().toLowerCase() : '';
+                const codSec = row[IDX_COD_SEC] ? String(row[IDX_COD_SEC]).trim().toLowerCase() : '';
+                const cartao = row[IDX_CARTAO] ? String(row[IDX_CARTAO]).trim().toLowerCase() : '';
 
-                    let matchTipoValor = true;
-                    if (tipoValorVal === 'custeio') matchTipoValor = custeio > 0;
-                    if (tipoValorVal === 'capital') matchTipoValor = capital > 0;
+                // Pega o valor da remessa garantindo que seja string
+                const rawRemessa = row[remessaCol];
+                const remessa = (rawRemessa !== undefined && rawRemessa !== null && rawRemessa !== '') ?
+                    String(rawRemessa).trim() : '';
 
-                    const match = matchNte && matchMuni && matchCodSec && matchCartao && matchFinalidade && matchRemessa && matchTipoValor;
-                    
-                    if (match) {
-                        count++;
-                        totalCusteio += custeio;
-                        totalCapital += capital;
-                    }
-                    
-                    return match;
-                });
+                const finalidade = row[finalidadeCol] ? String(row[finalidadeCol]).trim().toLowerCase() : '';
 
-                const prefix = panel;
-                document.querySelector(`.${prefix}-total`).textContent = count;
-                document.querySelector(`.${prefix}-custeio`).textContent = totalCusteio.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-                document.querySelector(`.${prefix}-capital`).textContent = totalCapital.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-                document.querySelector(`.${prefix}-geral`).textContent = (totalCusteio + totalCapital).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                const custeio = parseFloat(String(row[valorCusteioCol]).replace(',', '.')) || 0;
+                const capital = parseFloat(String(row[valorCapitalCol]).replace(',', '.')) || 0;
 
-                document.querySelector(`.${prefix}-visible`).textContent = count;
-                document.querySelector(`.${prefix}-total-count`).textContent = allData[panel].length;
+                const matchNte = !nteVal || nte === nteVal;
+                const matchMuni = !muniVal || muni === muniVal;
+                const matchCodSec = !searchCodSec || codSec.includes(searchCodSec);
+                const matchCartao = !searchCartao || cartao.includes(searchCartao);
+                const matchFinalidade = !searchFinalidade || finalidade.includes(searchFinalidade);
+                const matchRemessa = !selectedRemessa || remessa === selectedRemessa;
 
-                currentPage[panel] = 1;
-                renderPage(panel);
-                
+                let matchTipoValor = true;
+                if (tipoValorVal === 'custeio') matchTipoValor = custeio > 0;
+                if (tipoValorVal === 'capital') matchTipoValor = capital > 0;
+
+                const match = matchNte && matchMuni && matchCodSec && matchCartao && matchFinalidade && matchRemessa && matchTipoValor;
+
+                if (match) {
+                    count++;
+                    totalCusteio += custeio;
+                    totalCapital += capital;
+                }
+
+                return match;
+            });
+
+            const prefix = panel;
+            document.querySelector(`.${prefix}-total`).textContent = count;
+            document.querySelector(`.${prefix}-custeio`).textContent = totalCusteio.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            document.querySelector(`.${prefix}-capital`).textContent = totalCapital.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            document.querySelector(`.${prefix}-geral`).textContent = (totalCusteio + totalCapital).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+            document.querySelector(`.${prefix}-visible`).textContent = count;
+            document.querySelector(`.${prefix}-total-count`).textContent = allData[panel].length;
+
+            currentPage[panel] = 1;
+            renderPage(panel);
+
+            if (panel === currentTab) {
                 updateRemessaList(panel);
-
-                isProcessing = false;
-            }, 50);
+            }
         }
 
         function renderPage(panel) {
@@ -2016,7 +2037,7 @@
             document.querySelectorAll('.remessa-item').forEach(el => el.classList.remove('active'));
             
             updateMunicipioDropdown();
-            applyFilters(currentTab);
+            Object.keys(PANELS).forEach(p => applyFilters(p));
             filterRemessaList();
         }
     </script>
