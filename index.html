@@ -599,7 +599,7 @@
 
         .search-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr 1fr 1fr;
             gap: 16px;
             flex-shrink: 0;
         }
@@ -613,7 +613,7 @@
         }
 
         .search-card h3 {
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             font-weight: 600;
             color: var(--text-dark);
             margin-bottom: 6px;
@@ -898,6 +898,10 @@
             font-weight: 600;
         }
 
+        @media (max-width: 1100px) {
+            .search-grid { grid-template-columns: 1fr 1fr; }
+        }
+
         @media (max-width: 900px) {
             .search-grid { grid-template-columns: 1fr; }
             .metrics-grid { grid-template-columns: repeat(2, 1fr); }
@@ -1026,14 +1030,21 @@
                         <h3><i class="fa-solid fa-barcode"></i> Código SEC</h3>
                         <div class="search-input-wrapper">
                             <i class="fa-solid fa-magnifying-glass"></i>
-                            <input type="text" class="search-input" data-panel="pnae" placeholder="Digite o Código SEC...">
+                            <input type="text" class="search-input" data-panel="pnae" data-field="codsec" placeholder="Digite o Código SEC...">
                         </div>
                     </div>
                     <div class="search-card">
                         <h3><i class="fa-solid fa-credit-card"></i> Nº Cartão</h3>
                         <div class="search-input-wrapper">
                             <i class="fa-regular fa-credit-card"></i>
-                            <input type="text" class="search-input" data-panel="pnae" placeholder="Digite o nº do Cartão...">
+                            <input type="text" class="search-input" data-panel="pnae" data-field="cartao" placeholder="Digite o nº do Cartão...">
+                        </div>
+                    </div>
+                    <div class="search-card">
+                        <h3><i class="fa-solid fa-file-pen"></i> Finalidade</h3>
+                        <div class="search-input-wrapper">
+                            <i class="fa-solid fa-search"></i>
+                            <input type="text" class="search-input" data-panel="pnae" data-field="finalidade" placeholder="Digite a Finalidade...">
                         </div>
                     </div>
                 </div>
@@ -1076,14 +1087,21 @@
                         <h3><i class="fa-solid fa-barcode"></i> Código SEC</h3>
                         <div class="search-input-wrapper">
                             <i class="fa-solid fa-magnifying-glass"></i>
-                            <input type="text" class="search-input" data-panel="faed" placeholder="Digite o Código SEC...">
+                            <input type="text" class="search-input" data-panel="faed" data-field="codsec" placeholder="Digite o Código SEC...">
                         </div>
                     </div>
                     <div class="search-card">
                         <h3><i class="fa-solid fa-credit-card"></i> Nº Cartão</h3>
                         <div class="search-input-wrapper">
                             <i class="fa-regular fa-credit-card"></i>
-                            <input type="text" class="search-input" data-panel="faed" placeholder="Digite o nº do Cartão...">
+                            <input type="text" class="search-input" data-panel="faed" data-field="cartao" placeholder="Digite o nº do Cartão...">
+                        </div>
+                    </div>
+                    <div class="search-card">
+                        <h3><i class="fa-solid fa-file-pen"></i> Finalidade</h3>
+                        <div class="search-input-wrapper">
+                            <i class="fa-solid fa-search"></i>
+                            <input type="text" class="search-input" data-panel="faed" data-field="finalidade" placeholder="Digite a Finalidade...">
                         </div>
                     </div>
                 </div>
@@ -1126,14 +1144,21 @@
                         <h3><i class="fa-solid fa-barcode"></i> Código SEC</h3>
                         <div class="search-input-wrapper">
                             <i class="fa-solid fa-magnifying-glass"></i>
-                            <input type="text" class="search-input" data-panel="manut" placeholder="Digite o Código SEC...">
+                            <input type="text" class="search-input" data-panel="manut" data-field="codsec" placeholder="Digite o Código SEC...">
                         </div>
                     </div>
                     <div class="search-card">
                         <h3><i class="fa-solid fa-credit-card"></i> Nº Cartão</h3>
                         <div class="search-input-wrapper">
                             <i class="fa-regular fa-credit-card"></i>
-                            <input type="text" class="search-input" data-panel="manut" placeholder="Digite o nº do Cartão...">
+                            <input type="text" class="search-input" data-panel="manut" data-field="cartao" placeholder="Digite o nº do Cartão...">
+                        </div>
+                    </div>
+                    <div class="search-card">
+                        <h3><i class="fa-solid fa-file-pen"></i> Finalidade</h3>
+                        <div class="search-input-wrapper">
+                            <i class="fa-solid fa-search"></i>
+                            <input type="text" class="search-input" data-panel="manut" data-field="finalidade" placeholder="Digite a Finalidade...">
                         </div>
                     </div>
                 </div>
@@ -1184,6 +1209,7 @@
                 icon: 'fa-utensils',
                 remessaCol: 12,
                 valorCusteioCol: 11,
+                finalidadeCol: 14,  // Coluna O
                 hasCusteioCapital: true
             },
             faed: {
@@ -1193,6 +1219,7 @@
                 icon: 'fa-hand-holding-heart',
                 remessaCol: 12,
                 valorCusteioCol: 11,
+                finalidadeCol: 14,  // Coluna O
                 hasCusteioCapital: true
             },
             manut: {
@@ -1203,6 +1230,7 @@
                 remessaCol: 14,
                 valorCusteioCol: 12,
                 valorCapitalCol: 13,
+                finalidadeCol: 16,  // Coluna Q
                 hasCusteioCapital: true
             }
         };
@@ -1227,8 +1255,7 @@
         const IDX_COD_SEC = 2;
         const IDX_CARTAO = 8;
 
-        // Colunas que SÃO números e NÃO devem ser formatadas como moeda
-        const NUMERIC_COLUMNS = [0, 2, 3, 4, 8, 12, 13, 14]; // NTE, Cod.SEC, Cod.Custo, Cod.INEP, cartão, remessa
+        const NUMERIC_COLUMNS = [0, 2, 3, 4, 8, 12, 13, 14];
 
         function debounce(func, delay) {
             let timeoutId;
@@ -1250,7 +1277,10 @@
             return PANELS[panel]?.valorCapitalCol || 12;
         }
 
-        // Verifica se a coluna deve ser exibida como número (sem formatação de moeda)
+        function getFinalidadeCol(panel) {
+            return PANELS[panel]?.finalidadeCol || 14;
+        }
+
         function isNumericColumn(colIdx) {
             return NUMERIC_COLUMNS.includes(colIdx);
         }
@@ -1563,10 +1593,21 @@
                 const remessaCol = getRemessaCol(panel);
                 const valorCusteioCol = getValorCusteioCol(panel);
                 const valorCapitalCol = getValorCapitalCol(panel);
+                const finalidadeCol = getFinalidadeCol(panel);
                 
+                // Buscar os valores dos inputs de pesquisa
                 const searchInputs = document.querySelectorAll(`.search-input[data-panel="${panel}"]`);
-                const searchCodSec = searchInputs[0]?.value.trim().toLowerCase() || '';
-                const searchCartao = searchInputs[1]?.value.trim().toLowerCase() || '';
+                let searchCodSec = '';
+                let searchCartao = '';
+                let searchFinalidade = '';
+                
+                searchInputs.forEach(input => {
+                    const field = input.dataset.field;
+                    const value = input.value.trim().toLowerCase();
+                    if (field === 'codsec') searchCodSec = value;
+                    else if (field === 'cartao') searchCartao = value;
+                    else if (field === 'finalidade') searchFinalidade = value;
+                });
 
                 let totalCusteio = 0;
                 let totalCapital = 0;
@@ -1579,6 +1620,7 @@
                     const cartao = row[IDX_CARTAO] ? row[IDX_CARTAO].toString().trim().toLowerCase() : '';
                     const remessa = row[remessaCol] !== undefined && row[remessaCol] !== '' ? 
                         row[remessaCol].toString().trim() : '';
+                    const finalidade = row[finalidadeCol] ? row[finalidadeCol].toString().trim().toLowerCase() : '';
 
                     const custeio = parseFloat(row[valorCusteioCol]) || 0;
                     const capital = parseFloat(row[valorCapitalCol]) || 0;
@@ -1587,13 +1629,14 @@
                     const matchMuni = !muniVal || muni === muniVal;
                     const matchCodSec = !searchCodSec || codSec.includes(searchCodSec);
                     const matchCartao = !searchCartao || cartao.includes(searchCartao);
+                    const matchFinalidade = !searchFinalidade || finalidade.includes(searchFinalidade);
                     const matchRemessa = !selectedRemessa || remessa === selectedRemessa;
 
                     let matchTipoValor = true;
                     if (tipoValorVal === 'custeio') matchTipoValor = custeio > 0;
                     if (tipoValorVal === 'capital') matchTipoValor = capital > 0;
 
-                    const match = matchNte && matchMuni && matchCodSec && matchCartao && matchRemessa && matchTipoValor;
+                    const match = matchNte && matchMuni && matchCodSec && matchCartao && matchFinalidade && matchRemessa && matchTipoValor;
                     
                     if (match) {
                         count++;
@@ -1642,12 +1685,9 @@
                     if (visibleColumns[panel][colIdx]) {
                         const td = document.createElement('td');
                         
-                        // Verifica se é uma coluna numérica (NTE, Cod.SEC, etc.)
                         if (isNumericColumn(colIdx)) {
-                            // Exibe como número puro, sem formatação de moeda
                             td.textContent = cellVal !== null && cellVal !== undefined ? cellVal : '';
                         } else if (typeof cellVal === 'number' && cellVal > 0) {
-                            // Formata como moeda apenas para colunas de valor
                             td.textContent = cellVal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                         } else {
                             td.textContent = cellVal !== null && cellVal !== undefined ? cellVal : '';
