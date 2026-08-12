@@ -189,36 +189,71 @@
             font-size: 0.9rem;
         }
 
+        .remessa-search {
+            position: relative;
+            margin-bottom: 10px;
+        }
+
+        .remessa-search input {
+            width: 100%;
+            padding: 6px 10px 6px 32px;
+            border: 1px solid #c8e6c9;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            outline: none;
+            transition: all 0.2s;
+            background: #fafbfc;
+        }
+
+        .remessa-search input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+        }
+
+        .remessa-search i {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
         .remessa-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 6px 8px;
+            padding: 5px 8px;
             border-radius: 6px;
-            margin-bottom: 4px;
+            margin-bottom: 3px;
             background: #f8fbf8;
             transition: all 0.2s;
-            cursor: default;
+            cursor: pointer;
         }
 
         .remessa-item:hover {
             background: #e8f5e9;
         }
 
+        .remessa-item.active {
+            background: #a5d6a7;
+            font-weight: 600;
+        }
+
         .remessa-item .label {
-            font-size: 0.78rem;
+            font-size: 0.75rem;
             font-weight: 500;
             color: var(--text-dark);
         }
 
         .remessa-item .badge {
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             font-weight: 700;
             padding: 2px 10px;
             border-radius: 12px;
             background: var(--primary);
             color: #fff;
-            min-width: 28px;
+            min-width: 24px;
             text-align: center;
         }
 
@@ -234,32 +269,43 @@
             background: var(--success);
         }
 
+        .remessa-item .badge.secondary {
+            background: #6c757d;
+        }
+
         .remessa-divider {
             height: 1px;
             background: #c8e6c9;
-            margin: 6px 0;
+            margin: 4px 0;
         }
 
         .remessa-total {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 8px 8px 0 8px;
+            padding: 6px 8px 0 8px;
             border-top: 2px solid #a5d6a7;
             margin-top: 6px;
-            padding-top: 10px;
+            padding-top: 8px;
         }
 
         .remessa-total .label {
-            font-size: 0.78rem;
+            font-size: 0.75rem;
             font-weight: 600;
             color: var(--text-dark);
         }
 
         .remessa-total .value {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             font-weight: 700;
             color: var(--primary);
+        }
+
+        .remessa-empty {
+            padding: 10px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.75rem;
         }
 
         .btn-expand-sidebar {
@@ -720,7 +766,7 @@
 
         <div class="filter-group">
             <label><i class="fa-regular fa-circle-dot"></i> NTE</label>
-            <select id="filter-nte" onchange="updateRemessaCount()">
+            <select id="filter-nte">
                 <option value="">Todos os NTEs</option>
             </select>
         </div>
@@ -747,13 +793,15 @@
                 <i class="fa-solid fa-clipboard-list"></i>
                 Validação Remessa (Coluna O)
             </div>
-            <div id="remessa-list">
-                <div class="remessa-item" style="justify-content: center; color: var(--text-muted); font-size: 0.75rem;">
-                    <span>Selecione um NTE para ver a contagem</span>
-                </div>
+            <div class="remessa-search">
+                <i class="fa-solid fa-search"></i>
+                <input type="text" id="remessa-search-input" placeholder="Filtrar remessa..." oninput="filterRemessaList()">
             </div>
-            <div class="remessa-total" id="remessa-total" style="display: none;">
-                <span class="label">Total Geral</span>
+            <div id="remessa-list">
+                <div class="remessa-empty">Carregando dados...</div>
+            </div>
+            <div class="remessa-total" id="remessa-total">
+                <span class="label">Total de Itens</span>
                 <span class="value" id="remessa-total-value">0</span>
             </div>
         </div>
@@ -885,6 +933,8 @@
         let currentPage = 1;
         let totalPages = 1;
         let isProcessing = false;
+        let selectedRemessa = null;
+        let remessaData = {};
 
         // Índices das colunas
         const IDX_NTE = 0;
@@ -925,7 +975,6 @@
 
             document.getElementById('filter-nte').addEventListener('change', () => {
                 updateMunicipioDropdown();
-                updateRemessaCount();
                 applyFilters();
             });
             document.getElementById('filter-municipio').addEventListener('change', applyFilters);
@@ -961,14 +1010,12 @@
                     populateNteDropdown();
                     updateMunicipioDropdown();
                     renderHeader();
+                    buildRemessaList();
                     applyFilters();
 
                     document.getElementById('loading').style.display = 'none';
                     document.getElementById('data-table').style.display = 'table';
                     document.getElementById('pagination-bar').style.display = 'flex';
-
-                    // Atualizar remessa após carregar dados
-                    updateRemessaCount();
                 })
                 .catch(err => {
                     console.error('Erro ao carregar os dados:', err);
@@ -1080,64 +1127,37 @@
             });
         }
 
-        // ===== ATUALIZAR CONTAGEM REMESSA =====
-        function updateRemessaCount() {
-            const selectedNte = document.getElementById('filter-nte').value;
-            const remessaList = document.getElementById('remessa-list');
-            const remessaTotal = document.getElementById('remessa-total');
-            const remessaTotalValue = document.getElementById('remessa-total-value');
-
-            if (!selectedNte) {
-                remessaList.innerHTML = `
-                    <div class="remessa-item" style="justify-content: center; color: var(--text-muted); font-size: 0.75rem;">
-                        <span>Selecione um NTE para ver a contagem</span>
-                    </div>
-                `;
-                remessaTotal.style.display = 'none';
-                return;
-            }
-
-            // Filtrar dados pelo NTE selecionado
-            const nteData = rawData.filter(row => {
-                const nte = row[IDX_NTE] ? row[IDX_NTE].toString().trim() : '';
-                return nte === selectedNte;
-            });
-
-            // Contar valores da coluna O (Remessa)
-            const remessaCounts = {};
-            let totalCount = 0;
-
-            nteData.forEach(row => {
+        // ===== CONSTRUIR LISTA REMESSA =====
+        function buildRemessaList() {
+            remessaData = {};
+            
+            rawData.forEach(row => {
                 const remessaVal = row[IDX_REMESSA] ? row[IDX_REMESSA].toString().trim() : '';
                 if (remessaVal !== '') {
-                    remessaCounts[remessaVal] = (remessaCounts[remessaVal] || 0) + 1;
-                    totalCount++;
+                    remessaData[remessaVal] = (remessaData[remessaVal] || 0) + 1;
                 }
             });
 
             // Ordenar por valor
-            const sortedKeys = Object.keys(remessaCounts).sort();
-
+            const sortedKeys = Object.keys(remessaData).sort();
+            
+            const remessaList = document.getElementById('remessa-list');
+            
             if (sortedKeys.length === 0) {
-                remessaList.innerHTML = `
-                    <div class="remessa-item" style="justify-content: center; color: var(--text-muted); font-size: 0.75rem;">
-                        <span>Nenhum dado na coluna O para este NTE</span>
-                    </div>
-                `;
-                remessaTotal.style.display = 'none';
+                remessaList.innerHTML = `<div class="remessa-empty">Nenhum dado na coluna O</div>`;
+                document.getElementById('remessa-total-value').textContent = '0';
                 return;
             }
 
-            // Construir lista
             let html = '';
             sortedKeys.forEach(key => {
-                const count = remessaCounts[key];
+                const count = remessaData[key];
                 let badgeClass = 'success';
                 if (count > 100) badgeClass = 'danger';
                 else if (count > 50) badgeClass = 'warning';
                 
                 html += `
-                    <div class="remessa-item">
+                    <div class="remessa-item" data-value="${key}" onclick="selectRemessa('${key}')">
                         <span class="label">${key}</span>
                         <span class="badge ${badgeClass}">${count}</span>
                     </div>
@@ -1145,10 +1165,47 @@
             });
 
             remessaList.innerHTML = html;
+            document.getElementById('remessa-total-value').textContent = Object.keys(remessaData).length;
             
-            // Mostrar total
-            remessaTotal.style.display = 'flex';
-            remessaTotalValue.textContent = totalCount;
+            // Destacar item selecionado
+            if (selectedRemessa) {
+                document.querySelectorAll('.remessa-item').forEach(el => {
+                    if (el.dataset.value === selectedRemessa) {
+                        el.classList.add('active');
+                    }
+                });
+            }
+        }
+
+        // ===== FILTRAR LISTA REMESSA =====
+        function filterRemessaList() {
+            const searchTerm = document.getElementById('remessa-search-input').value.toLowerCase();
+            const items = document.querySelectorAll('.remessa-item');
+            
+            items.forEach(item => {
+                const label = item.querySelector('.label').textContent.toLowerCase();
+                if (label.includes(searchTerm)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        // ===== SELECIONAR REMESSA =====
+        function selectRemessa(value) {
+            if (selectedRemessa === value) {
+                selectedRemessa = null;
+            } else {
+                selectedRemessa = value;
+            }
+            
+            // Atualizar visual
+            document.querySelectorAll('.remessa-item').forEach(el => {
+                el.classList.toggle('active', el.dataset.value === selectedRemessa);
+            });
+            
+            applyFilters();
         }
 
         // ===== APLICAR FILTROS =====
@@ -1176,6 +1233,7 @@
                         const muni = row[IDX_MUNICIPIO] ? row[IDX_MUNICIPIO].toString().trim().toLowerCase() : '';
                         const codSec = row[IDX_COD_SEC] ? row[IDX_COD_SEC].toString().trim().toLowerCase() : '';
                         const cartao = row[IDX_CARTAO] ? row[IDX_CARTAO].toString().trim().toLowerCase() : '';
+                        const remessa = row[IDX_REMESSA] ? row[IDX_REMESSA].toString().trim() : '';
 
                         const custeio = parseFloat(row[IDX_VALOR_CUSTEIO]) || 0;
                         const capital = parseFloat(row[IDX_VALOR_CAPITAL]) || 0;
@@ -1184,12 +1242,13 @@
                         const matchMuni = !muniVal || muni === muniVal;
                         const matchCodSec = !searchCodSec || codSec.includes(searchCodSec);
                         const matchCartao = !searchCartao || cartao.includes(searchCartao);
+                        const matchRemessa = !selectedRemessa || remessa === selectedRemessa;
 
                         let matchTipoValor = true;
                         if (tipoValorVal === 'custeio') matchTipoValor = custeio > 0;
                         if (tipoValorVal === 'capital') matchTipoValor = capital > 0;
 
-                        const match = matchNte && matchMuni && matchCodSec && matchCartao && matchTipoValor;
+                        const match = matchNte && matchMuni && matchCodSec && matchCartao && matchRemessa && matchTipoValor;
                         
                         if (match) {
                             totalCusteio += custeio;
@@ -1278,8 +1337,13 @@
             document.getElementById('filter-tipo-valor').value = 'todos';
             document.getElementById('search-cod-sec').value = '';
             document.getElementById('search-cartao').value = '';
+            document.getElementById('remessa-search-input').value = '';
+            
+            selectedRemessa = null;
+            document.querySelectorAll('.remessa-item').forEach(el => el.classList.remove('active'));
+            
             updateMunicipioDropdown();
-            updateRemessaCount();
+            filterRemessaList();
             applyFilters();
         }
     </script>
