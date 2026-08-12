@@ -1245,13 +1245,13 @@
                 color: '#1565C0',
                 name: 'PNAE',
                 icon: 'fa-utensils',
-                remessaCol: 12,          // Coluna M - pode ter número ou texto
+                remessaCol: 12,          // Coluna M - ler tudo (número ou texto)
                 valorCusteioCol: 11,      // Coluna L
                 finalidadeCol: 14,
                 dataRemessaCol: 13,
                 dataOutraCol: 17,
                 colunaTNumero: null,
-                // Colunas de valor: J(9), K(10), L(11)
+                // Colunas de valor: J(9), K(10), L(11) - NÃO inclui M(12) que é remessa
                 valorColunas: [9, 10, 11],
                 hasCusteioCapital: true
             },
@@ -1260,12 +1260,13 @@
                 color: '#E65100',
                 name: 'FAED',
                 icon: 'fa-hand-holding-heart',
-                remessaCol: 12,          // Coluna M - pode ter número ou texto
+                remessaCol: 12,          // Coluna M - ler tudo (número ou texto)
                 valorCusteioCol: 11,      // Coluna L
                 finalidadeCol: 14,
                 dataRemessaCol: 13,
                 dataOutraCol: 17,
                 colunaTNumero: null,
+                // Colunas de valor: J(9), K(10), L(11) - NÃO inclui M(12) que é remessa
                 valorColunas: [9, 10, 11],
                 hasCusteioCapital: true
             },
@@ -1274,14 +1275,14 @@
                 color: '#546E7A',
                 name: 'Manutenção',
                 icon: 'fa-tools',
-                remessaCol: 14,          // Coluna O - pode ter número ou texto
+                remessaCol: 14,          // Coluna O - ler tudo (número ou texto)
                 valorCusteioCol: 12,      // Coluna M
                 valorCapitalCol: 13,      // Coluna N
                 finalidadeCol: 16,
                 dataRemessaCol: 15,
                 dataOutraCol: 23,
                 colunaTNumero: 19,
-                // Colunas de valor: J(9), K(10), L(11), M(12), N(13)
+                // Colunas de valor: J(9), K(10), L(11), M(12), N(13) - NÃO inclui O(14) que é remessa
                 valorColunas: [9, 10, 11, 12, 13],
                 hasCusteioCapital: true
             }
@@ -1913,27 +1914,28 @@
                     if (visibleColumns[panel][colIdx]) {
                         const td = document.createElement('td');
                         
-                        // Verifica se é coluna de data (N, R, P, X)
+                        // 1. VERIFICA SE É COLUNA DE DATA
                         if (colIdx === dataRemessaCol || colIdx === dataOutraCol) {
                             td.textContent = formatDate(cellVal);
                         } 
-                        // Verifica se é a coluna de remessa (M do PNAE/FAED ou O da Manut)
+                        // 2. VERIFICA SE É A COLUNA DE REMESSA (M do PNAE/FAED ou O da Manut)
+                        //    EXIBE O VALOR ORIGINAL SEM FORMATAÇÃO
                         else if (colIdx === remessaCol) {
                             td.textContent = cellVal !== null && cellVal !== undefined ? cellVal : '';
                         }
-                        // Verifica se é coluna de valor monetário (J, K, L, M, N)
+                        // 3. VERIFICA SE É COLUNA DE VALOR MONETÁRIO
                         else if (valorColunas.includes(colIdx)) {
                             td.textContent = formatCurrency(cellVal);
                         }
-                        // Verifica se é a coluna T da Manutenção (número)
+                        // 4. VERIFICA SE É A COLUNA T DA MANUTENÇÃO (NÚMERO)
                         else if (colIdx === colunaTNumero) {
                             td.textContent = cellVal !== null && cellVal !== undefined ? cellVal : '';
                         }
-                        // Verifica se é coluna numérica (NTE, códigos, etc.)
+                        // 5. VERIFICA SE É COLUNA NUMÉRICA (NTE, CÓDIGOS, ETC.)
                         else if (isNumericColumn(colIdx)) {
                             td.textContent = cellVal !== null && cellVal !== undefined ? cellVal : '';
                         } 
-                        // Texto normal
+                        // 6. TEXTO NORMAL
                         else {
                             td.textContent = cellVal !== null && cellVal !== undefined ? cellVal : '';
                         }
