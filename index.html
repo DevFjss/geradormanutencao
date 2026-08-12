@@ -1251,6 +1251,7 @@
                 finalidadeCol: 14,
                 dataRemessaCol: 13,     // Coluna N
                 dataOutraCol: 17,       // Coluna R
+                colunaTNumero: null,    // Não tem coluna T no PNAE
                 hasCusteioCapital: true
             },
             faed: {
@@ -1263,6 +1264,7 @@
                 finalidadeCol: 14,
                 dataRemessaCol: 13,     // Coluna N
                 dataOutraCol: 17,       // Coluna R
+                colunaTNumero: null,    // Não tem coluna T no FAED
                 hasCusteioCapital: true
             },
             manut: {
@@ -1276,6 +1278,7 @@
                 finalidadeCol: 16,
                 dataRemessaCol: 15,     // Coluna P
                 dataOutraCol: 23,       // Coluna X
+                colunaTNumero: 19,      // Coluna T - é número
                 hasCusteioCapital: true
             }
         };
@@ -1301,9 +1304,7 @@
         const IDX_CARTAO = 8;
 
         // Colunas que são números (não devem ser formatadas como moeda)
-        const NUMERIC_COLUMNS = [0, 2, 3, 4, 8, 12, 13, 14];
-        // Colunas que são datas
-        const DATE_COLUMNS = [13, 15, 17, 23];
+        const NUMERIC_COLUMNS = [0, 2, 3, 4, 8, 12, 13, 14, 19];
 
         function debounce(func, delay) {
             let timeoutId;
@@ -1337,21 +1338,21 @@
             return PANELS[panel]?.dataOutraCol || 17;
         }
 
+        function getColunaTNumero(panel) {
+            return PANELS[panel]?.colunaTNumero || null;
+        }
+
         function isNumericColumn(colIdx) {
             return NUMERIC_COLUMNS.includes(colIdx);
         }
 
-        function isDateColumn(colIdx) {
-            return DATE_COLUMNS.includes(colIdx);
-        }
-
         // ===== FORMATAÇÃO DE DATA =====
         function formatDate(value) {
-            if (!value) return '';
+            if (!value && value !== 0) return '';
             
-            // Se for um número (timestamp do Google Sheets)
-            if (typeof value === 'number') {
-                // Data do Google Sheets (dias desde 30/12/1899)
+            // Se for número (timestamp do Google Sheets - dias desde 30/12/1899)
+            if (typeof value === 'number' && value > 0) {
+                // Data do Google Sheets
                 const date = new Date((value - 25569) * 86400 * 1000);
                 if (!isNaN(date.getTime())) {
                     const day = String(date.getDate()).padStart(2, '0');
@@ -1377,6 +1378,14 @@
                     const year = match[1];
                     const month = String(parseInt(match[2]) + 1).padStart(2, '0');
                     const day = String(match[3]).padStart(2, '0');
+                    return `${day}/${month}/${year}`;
+                }
+                // Se for uma data no formato "2026-01-14" ou similar
+                const date2 = new Date(value);
+                if (!isNaN(date2.getTime())) {
+                    const day = String(date2.getDate()).padStart(2, '0');
+                    const month = String(date2.getMonth() + 1).padStart(2, '0');
+                    const year = date2.getFullYear();
                     return `${day}/${month}/${year}`;
                 }
                 return value;
@@ -1880,9 +1889,9 @@
             const tbody = document.querySelector(`.${panel}-table tbody`);
             tbody.innerHTML = '';
 
-            // Obtém as colunas de data para este painel
             const dataRemessaCol = getDataRemessaCol(panel);
             const dataOutraCol = getDataOutraCol(panel);
+            const colunaTNumero = getColunaTNumero(panel);
 
             pageData.forEach(row => {
                 const tr = document.createElement('tr');
@@ -1893,11 +1902,21 @@
                         // Verifica se é coluna de data
                         if (colIdx === dataRemessaCol || colIdx === dataOutraCol) {
                             td.textContent = formatDate(cellVal);
-                        } else if (isNumericColumn(colIdx)) {
+                        } 
+                        // Verifica se é a coluna T da Manutenção (número)
+                        else if (colIdx === colunaTNumero) {
                             td.textContent = cellVal !== null && cellVal !== undefined ? cellVal : '';
-                        } else if (typeof cellVal === 'number' && cellVal > 0) {
+                        }
+                        // Verifica se é coluna numérica (NTE, códigos, etc.)
+                        else if (isNumericColumn(colIdx)) {
+                            td.textContent = cellVal !== null && cellVal !== undefined ? cellVal : '';
+                        } 
+                        // Verifica se é valor monetário
+                        else if (typeof cellVal === 'number' && cellVal > 0) {
                             td.textContent = cellVal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-                        } else {
+                        } 
+                        // Texto normal
+                        else {
                             td.textContent = cellVal !== null && cellVal !== undefined ? cellVal : '';
                         }
                         td.title = td.textContent;
