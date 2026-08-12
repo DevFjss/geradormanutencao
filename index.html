@@ -46,7 +46,6 @@
             overflow: hidden;
         }
 
-        /* ===== SIDEBAR ===== */
         aside {
             width: var(--sidebar-width);
             min-width: var(--sidebar-width);
@@ -753,7 +752,7 @@
             color: var(--text-dark);
         }
 
-        /* ===== TABELA COM REDIMENSIONAMENTO ===== */
+        /* ===== TABELA ===== */
         .table-container {
             background: #fff;
             border-radius: 10px;
@@ -795,7 +794,6 @@
             min-width: 60px;
         }
 
-        /* Handle de redimensionamento */
         th .resize-handle {
             position: absolute;
             top: 0;
@@ -1251,6 +1249,8 @@
                 remessaCol: 12,
                 valorCusteioCol: 11,
                 finalidadeCol: 14,
+                dataRemessaCol: 13,     // Coluna N
+                dataOutraCol: 17,       // Coluna R
                 hasCusteioCapital: true
             },
             faed: {
@@ -1261,6 +1261,8 @@
                 remessaCol: 12,
                 valorCusteioCol: 11,
                 finalidadeCol: 14,
+                dataRemessaCol: 13,     // Coluna N
+                dataOutraCol: 17,       // Coluna R
                 hasCusteioCapital: true
             },
             manut: {
@@ -1272,6 +1274,8 @@
                 valorCusteioCol: 12,
                 valorCapitalCol: 13,
                 finalidadeCol: 16,
+                dataRemessaCol: 15,     // Coluna P
+                dataOutraCol: 23,       // Coluna X
                 hasCusteioCapital: true
             }
         };
@@ -1296,7 +1300,10 @@
         const IDX_COD_SEC = 2;
         const IDX_CARTAO = 8;
 
+        // Colunas que são números (não devem ser formatadas como moeda)
         const NUMERIC_COLUMNS = [0, 2, 3, 4, 8, 12, 13, 14];
+        // Colunas que são datas
+        const DATE_COLUMNS = [13, 15, 17, 23];
 
         function debounce(func, delay) {
             let timeoutId;
@@ -1322,106 +1329,61 @@
             return PANELS[panel]?.finalidadeCol || 14;
         }
 
+        function getDataRemessaCol(panel) {
+            return PANELS[panel]?.dataRemessaCol || 13;
+        }
+
+        function getDataOutraCol(panel) {
+            return PANELS[panel]?.dataOutraCol || 17;
+        }
+
         function isNumericColumn(colIdx) {
             return NUMERIC_COLUMNS.includes(colIdx);
         }
 
-        // ===== REDIMENSIONAMENTO DE COLUNAS =====
-        let columnResize = {
-            isResizing: false,
-            currentTh: null,
-            startX: 0,
-            startWidth: 0,
-            currentPanel: null
-        };
-
-        function initColumnResize(panel) {
-            const table = document.querySelector(`.${panel}-table`);
-            if (!table) return;
-            
-            const ths = table.querySelectorAll('thead th');
-            
-            ths.forEach(th => {
-                // Remove handles antigos para evitar duplicação
-                const oldHandle = th.querySelector('.resize-handle');
-                if (oldHandle) oldHandle.remove();
-                
-                const handle = document.createElement('div');
-                handle.className = 'resize-handle';
-                handle.dataset.panel = panel;
-                
-                handle.addEventListener('mousedown', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    columnResize.isResizing = true;
-                    columnResize.currentTh = th;
-                    columnResize.currentPanel = panel;
-                    columnResize.startX = e.clientX;
-                    columnResize.startWidth = th.offsetWidth;
-                    
-                    handle.classList.add('active');
-                    document.body.style.cursor = 'col-resize';
-                    document.body.style.userSelect = 'none';
-                    
-                    // Desabilitar seleção de texto
-                    document.querySelectorAll('td, th').forEach(el => {
-                        el.style.userSelect = 'none';
-                    });
-                });
-                
-                th.appendChild(handle);
-            });
+        function isDateColumn(colIdx) {
+            return DATE_COLUMNS.includes(colIdx);
         }
 
-        document.addEventListener('mousemove', (e) => {
-            if (!columnResize.isResizing) return;
+        // ===== FORMATAÇÃO DE DATA =====
+        function formatDate(value) {
+            if (!value) return '';
             
-            const th = columnResize.currentTh;
-            const panel = columnResize.currentPanel;
-            if (!th || !panel) return;
-            
-            const diff = e.clientX - columnResize.startX;
-            const newWidth = Math.max(60, columnResize.startWidth + diff);
-            
-            // Aplicar largura ao th
-            th.style.width = newWidth + 'px';
-            th.style.minWidth = newWidth + 'px';
-            th.style.maxWidth = newWidth + 'px';
-            
-            // Aplicar largura às células do corpo da tabela
-            const table = th.closest('table');
-            if (table) {
-                const colIndex = Array.from(th.parentElement.children).indexOf(th);
-                const rows = table.querySelectorAll('tbody tr');
-                rows.forEach(row => {
-                    const td = row.children[colIndex];
-                    if (td) {
-                        td.style.width = newWidth + 'px';
-                        td.style.minWidth = newWidth + 'px';
-                        td.style.maxWidth = newWidth + 'px';
-                    }
-                });
+            // Se for um número (timestamp do Google Sheets)
+            if (typeof value === 'number') {
+                // Data do Google Sheets (dias desde 30/12/1899)
+                const date = new Date((value - 25569) * 86400 * 1000);
+                if (!isNaN(date.getTime())) {
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const year = date.getFullYear();
+                    return `${day}/${month}/${year}`;
+                }
             }
-        });
-
-        document.addEventListener('mouseup', () => {
-            if (columnResize.isResizing) {
-                columnResize.isResizing = false;
-                document.body.style.cursor = '';
-                document.body.style.userSelect = '';
-                
-                document.querySelectorAll('td, th').forEach(el => {
-                    el.style.userSelect = '';
-                });
-                
-                const handle = document.querySelector('.resize-handle.active');
-                if (handle) handle.classList.remove('active');
-                
-                columnResize.currentTh = null;
-                columnResize.currentPanel = null;
+            
+            // Se for string, tenta converter
+            if (typeof value === 'string') {
+                // Tenta parsear como data
+                const date = new Date(value);
+                if (!isNaN(date.getTime())) {
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const year = date.getFullYear();
+                    return `${day}/${month}/${year}`;
+                }
+                // Se for uma string no formato "Data(2026,0,14)" do Google Sheets
+                const match = value.match(/Data\((\d+),(\d+),(\d+)\)/);
+                if (match) {
+                    const year = match[1];
+                    const month = String(parseInt(match[2]) + 1).padStart(2, '0');
+                    const day = String(match[3]).padStart(2, '0');
+                    return `${day}/${month}/${year}`;
+                }
+                return value;
             }
-        });
+            
+            return value;
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
             Object.keys(PANELS).forEach(panel => {
@@ -1492,7 +1454,6 @@
             
             applyFilters(tab);
             
-            // Inicializar redimensionamento após a tabela ser carregada
             setTimeout(() => initColumnResize(tab), 100);
         }
 
@@ -1531,7 +1492,6 @@
                     if (table) table.style.display = 'table';
                     if (pagination) pagination.style.display = 'flex';
                     
-                    // Inicializar redimensionamento após carregar
                     setTimeout(() => initColumnResize(panel), 200);
                 })
                 .catch(err => {
@@ -1651,7 +1611,6 @@
                 if (visibleColumns[panel][idx]) {
                     const th = document.createElement('th');
                     th.textContent = h || `Coluna ${idx+1}`;
-                    // Definir largura inicial padrão
                     th.style.width = '120px';
                     th.style.minWidth = '60px';
                     th.style.maxWidth = '400px';
@@ -1659,9 +1618,101 @@
                 }
             });
             
-            // Reinicializar redimensionamento após renderizar o cabeçalho
             setTimeout(() => initColumnResize(panel), 50);
         }
+
+        // ===== REDIMENSIONAMENTO DE COLUNAS =====
+        let columnResize = {
+            isResizing: false,
+            currentTh: null,
+            startX: 0,
+            startWidth: 0,
+            currentPanel: null
+        };
+
+        function initColumnResize(panel) {
+            const table = document.querySelector(`.${panel}-table`);
+            if (!table) return;
+            
+            const ths = table.querySelectorAll('thead th');
+            
+            ths.forEach(th => {
+                const oldHandle = th.querySelector('.resize-handle');
+                if (oldHandle) oldHandle.remove();
+                
+                const handle = document.createElement('div');
+                handle.className = 'resize-handle';
+                handle.dataset.panel = panel;
+                
+                handle.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    columnResize.isResizing = true;
+                    columnResize.currentTh = th;
+                    columnResize.currentPanel = panel;
+                    columnResize.startX = e.clientX;
+                    columnResize.startWidth = th.offsetWidth;
+                    
+                    handle.classList.add('active');
+                    document.body.style.cursor = 'col-resize';
+                    document.body.style.userSelect = 'none';
+                    
+                    document.querySelectorAll('td, th').forEach(el => {
+                        el.style.userSelect = 'none';
+                    });
+                });
+                
+                th.appendChild(handle);
+            });
+        }
+
+        document.addEventListener('mousemove', (e) => {
+            if (!columnResize.isResizing) return;
+            
+            const th = columnResize.currentTh;
+            const panel = columnResize.currentPanel;
+            if (!th || !panel) return;
+            
+            const diff = e.clientX - columnResize.startX;
+            const newWidth = Math.max(60, columnResize.startWidth + diff);
+            
+            th.style.width = newWidth + 'px';
+            th.style.minWidth = newWidth + 'px';
+            th.style.maxWidth = newWidth + 'px';
+            
+            const table = th.closest('table');
+            if (table) {
+                const colIndex = Array.from(th.parentElement.children).indexOf(th);
+                const rows = table.querySelectorAll('tbody tr');
+                rows.forEach(row => {
+                    const td = row.children[colIndex];
+                    if (td) {
+                        td.style.width = newWidth + 'px';
+                        td.style.minWidth = newWidth + 'px';
+                        td.style.maxWidth = newWidth + 'px';
+                    }
+                });
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (columnResize.isResizing) {
+                columnResize.isResizing = false;
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+                
+                document.querySelectorAll('td, th').forEach(el => {
+                    el.style.userSelect = '';
+                });
+                
+                const handle = document.querySelector('.resize-handle.active');
+                if (handle) handle.classList.remove('active');
+                
+                columnResize.currentTh = null;
+                columnResize.currentPanel = null;
+            }
+        });
 
         function updateRemessaList(panel) {
             const data = filteredData[panel] || [];
@@ -1829,13 +1880,20 @@
             const tbody = document.querySelector(`.${panel}-table tbody`);
             tbody.innerHTML = '';
 
+            // Obtém as colunas de data para este painel
+            const dataRemessaCol = getDataRemessaCol(panel);
+            const dataOutraCol = getDataOutraCol(panel);
+
             pageData.forEach(row => {
                 const tr = document.createElement('tr');
                 row.forEach((cellVal, colIdx) => {
                     if (visibleColumns[panel][colIdx]) {
                         const td = document.createElement('td');
                         
-                        if (isNumericColumn(colIdx)) {
+                        // Verifica se é coluna de data
+                        if (colIdx === dataRemessaCol || colIdx === dataOutraCol) {
+                            td.textContent = formatDate(cellVal);
+                        } else if (isNumericColumn(colIdx)) {
                             td.textContent = cellVal !== null && cellVal !== undefined ? cellVal : '';
                         } else if (typeof cellVal === 'number' && cellVal > 0) {
                             td.textContent = cellVal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
