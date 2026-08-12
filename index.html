@@ -1748,7 +1748,6 @@
             });
 
             const sortedKeys = Object.keys(remessaData).sort((a, b) => {
-                // Tenta ordenar numericamente, se ambos forem números
                 const numA = parseFloat(a);
                 const numB = parseFloat(b);
                 if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
@@ -1775,7 +1774,6 @@
                 
                 const isActive = selectedRemessa === key ? 'active' : '';
                 
-                // Escapa caracteres especiais para usar no onclick
                 const escapedKey = key.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
                 
                 html += `
@@ -1903,11 +1901,11 @@
             const tbody = document.querySelector(`.${panel}-table tbody`);
             tbody.innerHTML = '';
 
+            const remessaCol = getRemessaCol(panel);
             const dataRemessaCol = getDataRemessaCol(panel);
             const dataOutraCol = getDataOutraCol(panel);
             const colunaTNumero = getColunaTNumero(panel);
             const valorColunas = getValorColunas(panel);
-            const remessaCol = getRemessaCol(panel);
 
             pageData.forEach(row => {
                 const tr = document.createElement('tr');
@@ -1915,30 +1913,29 @@
                     if (visibleColumns[panel][colIdx]) {
                         const td = document.createElement('td');
                         
-                        // VERIFICA SE É A COLUNA DE REMESSA - DEVE EXIBIR O VALOR ORIGINAL SEM FORMATAÇÃO
+                        // PRIORIDADE 1: COLUNA DE REMESSA - exibir valor original sem formatação
                         if (colIdx === remessaCol) {
-                            // Exibe o valor exatamente como está, seja número ou texto
-                            td.textContent = cellVal !== null && cellVal !== undefined ? cellVal : '';
+                            td.textContent = (cellVal !== null && cellVal !== undefined && cellVal !== '') ? String(cellVal) : '';
                         }
-                        // VERIFICA SE É COLUNA DE DATA
+                        // PRIORIDADE 2: COLUNAS DE DATA
                         else if (colIdx === dataRemessaCol || colIdx === dataOutraCol) {
                             td.textContent = formatDate(cellVal);
                         }
-                        // VERIFICA SE É COLUNA DE VALOR MONETÁRIO
+                        // PRIORIDADE 3: COLUNAS DE VALOR MONETÁRIO
                         else if (valorColunas.includes(colIdx)) {
                             td.textContent = formatCurrency(cellVal);
                         }
-                        // VERIFICA SE É A COLUNA T DA MANUTENÇÃO (NÚMERO)
+                        // PRIORIDADE 4: COLUNA T DA MANUTENÇÃO
                         else if (colIdx === colunaTNumero) {
-                            td.textContent = cellVal !== null && cellVal !== undefined ? cellVal : '';
+                            td.textContent = (cellVal !== null && cellVal !== undefined) ? String(cellVal) : '';
                         }
-                        // VERIFICA SE É COLUNA NUMÉRICA (NTE, CÓDIGOS, ETC.)
+                        // PRIORIDADE 5: OUTRAS COLUNAS NUMÉRICAS
                         else if (isNumericColumn(colIdx)) {
-                            td.textContent = cellVal !== null && cellVal !== undefined ? cellVal : '';
+                            td.textContent = (cellVal !== null && cellVal !== undefined) ? String(cellVal) : '';
                         } 
-                        // TEXTO NORMAL
+                        // PRIORIDADE 6: TEXTO NORMAL
                         else {
-                            td.textContent = cellVal !== null && cellVal !== undefined ? cellVal : '';
+                            td.textContent = (cellVal !== null && cellVal !== undefined) ? String(cellVal) : '';
                         }
                         td.title = td.textContent;
                         tr.appendChild(td);
