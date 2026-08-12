@@ -1251,7 +1251,6 @@
                 dataRemessaCol: 13,
                 dataOutraCol: 17,
                 colunaTNumero: null,
-                // Colunas de valor: J(9), K(10), L(11) - NÃO inclui M(12) que é remessa
                 valorColunas: [9, 10, 11],
                 hasCusteioCapital: true
             },
@@ -1266,7 +1265,6 @@
                 dataRemessaCol: 13,
                 dataOutraCol: 17,
                 colunaTNumero: null,
-                // Colunas de valor: J(9), K(10), L(11) - NÃO inclui M(12) que é remessa
                 valorColunas: [9, 10, 11],
                 hasCusteioCapital: true
             },
@@ -1282,7 +1280,6 @@
                 dataRemessaCol: 15,
                 dataOutraCol: 23,
                 colunaTNumero: 19,
-                // Colunas de valor: J(9), K(10), L(11), M(12), N(13) - NÃO inclui O(14) que é remessa
                 valorColunas: [9, 10, 11, 12, 13],
                 hasCusteioCapital: true
             }
@@ -1751,6 +1748,7 @@
             });
 
             const sortedKeys = Object.keys(remessaData).sort((a, b) => {
+                // Tenta ordenar numericamente, se ambos forem números
                 const numA = parseFloat(a);
                 const numB = parseFloat(b);
                 if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
@@ -1777,8 +1775,11 @@
                 
                 const isActive = selectedRemessa === key ? 'active' : '';
                 
+                // Escapa caracteres especiais para usar no onclick
+                const escapedKey = key.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+                
                 html += `
-                    <div class="remessa-item ${isActive}" data-value="${key}" onclick="selectRemessa('${key}')">
+                    <div class="remessa-item ${isActive}" data-value="${key.replace(/"/g, '&quot;')}" onclick="selectRemessa('${escapedKey}')">
                         <span class="label">${key}</span>
                         <span class="badge ${badgeClass}">${count}</span>
                     </div>
@@ -1914,28 +1915,28 @@
                     if (visibleColumns[panel][colIdx]) {
                         const td = document.createElement('td');
                         
-                        // 1. VERIFICA SE É COLUNA DE DATA
-                        if (colIdx === dataRemessaCol || colIdx === dataOutraCol) {
-                            td.textContent = formatDate(cellVal);
-                        } 
-                        // 2. VERIFICA SE É A COLUNA DE REMESSA (M do PNAE/FAED ou O da Manut)
-                        //    EXIBE O VALOR ORIGINAL SEM FORMATAÇÃO
-                        else if (colIdx === remessaCol) {
+                        // VERIFICA SE É A COLUNA DE REMESSA - DEVE EXIBIR O VALOR ORIGINAL SEM FORMATAÇÃO
+                        if (colIdx === remessaCol) {
+                            // Exibe o valor exatamente como está, seja número ou texto
                             td.textContent = cellVal !== null && cellVal !== undefined ? cellVal : '';
                         }
-                        // 3. VERIFICA SE É COLUNA DE VALOR MONETÁRIO
+                        // VERIFICA SE É COLUNA DE DATA
+                        else if (colIdx === dataRemessaCol || colIdx === dataOutraCol) {
+                            td.textContent = formatDate(cellVal);
+                        }
+                        // VERIFICA SE É COLUNA DE VALOR MONETÁRIO
                         else if (valorColunas.includes(colIdx)) {
                             td.textContent = formatCurrency(cellVal);
                         }
-                        // 4. VERIFICA SE É A COLUNA T DA MANUTENÇÃO (NÚMERO)
+                        // VERIFICA SE É A COLUNA T DA MANUTENÇÃO (NÚMERO)
                         else if (colIdx === colunaTNumero) {
                             td.textContent = cellVal !== null && cellVal !== undefined ? cellVal : '';
                         }
-                        // 5. VERIFICA SE É COLUNA NUMÉRICA (NTE, CÓDIGOS, ETC.)
+                        // VERIFICA SE É COLUNA NUMÉRICA (NTE, CÓDIGOS, ETC.)
                         else if (isNumericColumn(colIdx)) {
                             td.textContent = cellVal !== null && cellVal !== undefined ? cellVal : '';
                         } 
-                        // 6. TEXTO NORMAL
+                        // TEXTO NORMAL
                         else {
                             td.textContent = cellVal !== null && cellVal !== undefined ? cellVal : '';
                         }
