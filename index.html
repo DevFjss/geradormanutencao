@@ -1251,7 +1251,8 @@
                 dataRemessaCol: 13,
                 dataOutraCol: 17,
                 colunaTNumero: null,
-                valorColunas: [11],
+                // Colunas J e K = índices 9 e 10 (Valor Original e Valor Bancário)
+                valorColunas: [9, 10, 11],
                 hasCusteioCapital: true
             },
             faed: {
@@ -1265,7 +1266,7 @@
                 dataRemessaCol: 13,
                 dataOutraCol: 17,
                 colunaTNumero: null,
-                valorColunas: [11],
+                valorColunas: [9, 10, 11],
                 hasCusteioCapital: true
             },
             manut: {
@@ -1280,7 +1281,8 @@
                 dataRemessaCol: 15,
                 dataOutraCol: 23,
                 colunaTNumero: 19,
-                valorColunas: [12, 13], // Colunas M e N são valores monetários
+                // Colunas J e K = índices 9 e 10, M e N = 12 e 13
+                valorColunas: [9, 10, 12, 13],
                 hasCusteioCapital: true
             }
         };
@@ -1914,7 +1916,7 @@
                         if (colIdx === dataRemessaCol || colIdx === dataOutraCol) {
                             td.textContent = formatDate(cellVal);
                         } 
-                        // Verifica se é coluna de valor monetário (M e N da Manut)
+                        // Verifica se é coluna de valor monetário (J, K, M, N)
                         else if (valorColunas.includes(colIdx)) {
                             td.textContent = formatCurrency(cellVal);
                         }
