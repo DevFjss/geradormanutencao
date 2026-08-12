@@ -1060,8 +1060,8 @@
                 <div class="blue-divider"></div>
                 <div class="metrics-grid">
                     <div class="metric-card"><div class="title">Total de Registros</div><div class="value pnae-total">0</div></div>
-                    <div class="metric-card"><div class="title">Total Remessa</div><div class="value pnae-remessa">R$ 0,00</div></div>
-                    <div class="metric-card"><div class="title">Total Valor</div><div class="value pnae-valor">R$ 0,00</div></div>
+                    <div class="metric-card"><div class="title">Total Custeio</div><div class="value pnae-custeio">R$ 0,00</div></div>
+                    <div class="metric-card"><div class="title">Total Capital</div><div class="value pnae-capital">R$ 0,00</div></div>
                     <div class="metric-card"><div class="title">Soma Geral</div><div class="value pnae-geral">R$ 0,00</div></div>
                 </div>
                 <div class="blue-divider"></div>
@@ -1111,8 +1111,8 @@
                 <div class="blue-divider"></div>
                 <div class="metrics-grid">
                     <div class="metric-card"><div class="title">Total de Registros</div><div class="value faed-total">0</div></div>
-                    <div class="metric-card"><div class="title">Total Remessa</div><div class="value faed-remessa">R$ 0,00</div></div>
-                    <div class="metric-card"><div class="title">Total Valor</div><div class="value faed-valor">R$ 0,00</div></div>
+                    <div class="metric-card"><div class="title">Total Custeio</div><div class="value faed-custeio">R$ 0,00</div></div>
+                    <div class="metric-card"><div class="title">Total Capital</div><div class="value faed-capital">R$ 0,00</div></div>
                     <div class="metric-card"><div class="title">Soma Geral</div><div class="value faed-geral">R$ 0,00</div></div>
                 </div>
                 <div class="blue-divider"></div>
@@ -1205,9 +1205,9 @@
                 name: 'PNAE',
                 icon: 'fa-utensils',
                 remessaCol: 12,     // Coluna M - REMESSA (número)
-                valorCol: 11,        // Coluna L - VALOR
-                hasCusteioCapital: false,
-                cardLabels: ['Total de Registros', 'Total Remessa', 'Total Valor', 'Soma Geral']
+                valorCusteioCol: 11, // Coluna L - VALOR CUSTEIO
+                hasCusteioCapital: true,
+                cardLabels: ['Total de Registros', 'Total Custeio', 'Total Capital', 'Soma Geral']
             },
             faed: {
                 sheet: 'Backup_Remessa_Faed',
@@ -1215,9 +1215,9 @@
                 name: 'FAED',
                 icon: 'fa-hand-holding-heart',
                 remessaCol: 12,     // Coluna M - REMESSA (número)
-                valorCol: 11,        // Coluna L - VALOR
-                hasCusteioCapital: false,
-                cardLabels: ['Total de Registros', 'Total Remessa', 'Total Valor', 'Soma Geral']
+                valorCusteioCol: 11, // Coluna L - VALOR CUSTEIO
+                hasCusteioCapital: true,
+                cardLabels: ['Total de Registros', 'Total Custeio', 'Total Capital', 'Soma Geral']
             },
             manut: {
                 sheet: 'Backup_Remessa_Manut',
@@ -1266,8 +1266,12 @@
             return PANELS[panel]?.remessaCol || 14;
         }
 
-        function getValorCol(panel) {
-            return PANELS[panel]?.valorCol || 11;
+        function getValorCusteioCol(panel) {
+            return PANELS[panel]?.valorCusteioCol || 11;
+        }
+
+        function getValorCapitalCol(panel) {
+            return PANELS[panel]?.valorCapitalCol || 12;
         }
 
         function hasCusteioCapital(panel) {
@@ -1535,13 +1539,22 @@
             remessaData = {};
             
             data.forEach(row => {
-                const remessaVal = row[remessaCol] ? row[remessaCol].toString().trim() : '';
+                // Pega o valor da coluna REMESSA (pode ser número ou texto)
+                const remessaVal = row[remessaCol] !== undefined && row[remessaCol] !== '' ? 
+                    row[remessaCol].toString().trim() : '';
                 if (remessaVal !== '') {
                     remessaData[remessaVal] = (remessaData[remessaVal] || 0) + 1;
                 }
             });
 
-            const sortedKeys = Object.keys(remessaData).sort();
+            // Ordenar numericamente se for número
+            const sortedKeys = Object.keys(remessaData).sort((a, b) => {
+                const numA = parseFloat(a);
+                const numB = parseFloat(b);
+                if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+                return a.localeCompare(b);
+            });
+            
             const remessaList = document.getElementById('remessa-list');
             const totalItems = Object.keys(remessaData).length;
             
@@ -1601,13 +1614,13 @@
                 const muniVal = document.getElementById('filter-municipio').value.toLowerCase();
                 const tipoValorVal = document.getElementById('filter-tipo-valor').value;
                 const remessaCol = getRemessaCol(panel);
-                const hasCusteioCap = hasCusteioCapital(panel);
+                const valorCusteioCol = getValorCusteioCol(panel);
+                const valorCapitalCol = getValorCapitalCol(panel);
                 
                 const searchInputs = document.querySelectorAll(`.search-input[data-panel="${panel}"]`);
                 const searchCodSec = searchInputs[0]?.value.trim().toLowerCase() || '';
                 const searchCartao = searchInputs[1]?.value.trim().toLowerCase() || '';
 
-                let totalRemessa = 0;
                 let totalCusteio = 0;
                 let totalCapital = 0;
                 let count = 0;
@@ -1617,14 +1630,13 @@
                     const muni = row[IDX_MUNICIPIO] ? row[IDX_MUNICIPIO].toString().trim().toLowerCase() : '';
                     const codSec = row[IDX_COD_SEC] ? row[IDX_COD_SEC].toString().trim().toLowerCase() : '';
                     const cartao = row[IDX_CARTAO] ? row[IDX_CARTAO].toString().trim().toLowerCase() : '';
-                    const remessa = row[remessaCol] ? row[remessaCol].toString().trim() : '';
+                    const remessa = row[remessaCol] !== undefined && row[remessaCol] !== '' ? 
+                        row[remessaCol].toString().trim() : '';
 
-                    // Para PNAE e FAED: valor está na coluna L (índice 11)
-                    const valor = hasCusteioCap ? 0 : (parseFloat(row[getValorCol(panel)]) || 0);
-                    
-                    // Para Manutenção: custeio e capital
-                    const custeio = hasCusteioCap ? (parseFloat(row[PANELS[panel].valorCusteioCol]) || 0) : 0;
-                    const capital = hasCusteioCap ? (parseFloat(row[PANELS[panel].valorCapitalCol]) || 0) : 0;
+                    // Valor Custeio (coluna L para PNAE/FAED, coluna M para Manut)
+                    const custeio = parseFloat(row[valorCusteioCol]) || 0;
+                    // Valor Capital (coluna N para Manut, 0 para PNAE/FAED)
+                    const capital = parseFloat(row[valorCapitalCol]) || 0;
 
                     const matchNte = !nteVal || nte === nteVal;
                     const matchMuni = !muniVal || muni === muniVal;
@@ -1633,21 +1645,15 @@
                     const matchRemessa = !selectedRemessa || remessa === selectedRemessa;
 
                     let matchTipoValor = true;
-                    if (hasCusteioCap) {
-                        if (tipoValorVal === 'custeio') matchTipoValor = custeio > 0;
-                        if (tipoValorVal === 'capital') matchTipoValor = capital > 0;
-                    }
+                    if (tipoValorVal === 'custeio') matchTipoValor = custeio > 0;
+                    if (tipoValorVal === 'capital') matchTipoValor = capital > 0;
 
                     const match = matchNte && matchMuni && matchCodSec && matchCartao && matchRemessa && matchTipoValor;
                     
                     if (match) {
                         count++;
-                        if (hasCusteioCap) {
-                            totalCusteio += custeio;
-                            totalCapital += capital;
-                        } else {
-                            totalRemessa += valor;
-                        }
+                        totalCusteio += custeio;
+                        totalCapital += capital;
                     }
                     
                     return match;
@@ -1656,16 +1662,9 @@
                 // Atualizar cards
                 const prefix = panel;
                 document.querySelector(`.${prefix}-total`).textContent = count;
-                
-                if (hasCusteioCap) {
-                    document.querySelector(`.${prefix}-custeio`).textContent = totalCusteio.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-                    document.querySelector(`.${prefix}-capital`).textContent = totalCapital.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-                    document.querySelector(`.${prefix}-geral`).textContent = (totalCusteio + totalCapital).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-                } else {
-                    document.querySelector(`.${prefix}-remessa`).textContent = totalRemessa.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-                    document.querySelector(`.${prefix}-valor`).textContent = totalRemessa.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-                    document.querySelector(`.${prefix}-geral`).textContent = totalRemessa.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-                }
+                document.querySelector(`.${prefix}-custeio`).textContent = totalCusteio.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                document.querySelector(`.${prefix}-capital`).textContent = totalCapital.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                document.querySelector(`.${prefix}-geral`).textContent = (totalCusteio + totalCapital).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
                 document.querySelector(`.${prefix}-visible`).textContent = count;
                 document.querySelector(`.${prefix}-total-count`).textContent = allData[panel].length;
