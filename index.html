@@ -1305,6 +1305,7 @@
         const IDX_COD_SEC = 2;
         const IDX_CARTAO = 8;
 
+        // Colunas que devem ser tratadas como numéricas (sem formatação de moeda)
         const NUMERIC_COLUMNS = [0, 2, 3, 4, 8, 12, 13, 14, 19];
 
         function debounce(func, delay) {
@@ -1394,8 +1395,8 @@
         // ===== FORMATAÇÃO DE VALOR MONETÁRIO =====
         function formatCurrency(value) {
             if (value === null || value === undefined || value === '') return '';
-            const num = parseFloat(value);
-            if (isNaN(num)) return value;
+            const num = parseFloat(String(value).replace(',', '.'));
+            if (isNaN(num)) return String(value);
             return num.toLocaleString('pt-BR', { 
                 style: 'currency', 
                 currency: 'BRL',
@@ -1489,7 +1490,22 @@
                     headers[panel] = json.table.cols.map((col, idx) => col.label || `Coluna ${idx + 1}`);
                     
                     allData[panel] = json.table.rows.map(row => {
-                        return row.c.map(cell => (cell && cell.v !== null && cell.v !== undefined) ? cell.v : '');
+                        return row.c.map(cell => {
+                            // Verifica se o valor existe
+                            if (cell && cell.v !== null && cell.v !== undefined) {
+                                // Se for string, mantém como string
+                                if (typeof cell.v === 'string') {
+                                    return cell.v;
+                                }
+                                // Se for número, mantém como número
+                                if (typeof cell.v === 'number') {
+                                    return cell.v;
+                                }
+                                // Outros tipos, converte para string
+                                return String(cell.v);
+                            }
+                            return '';
+                        });
                     });
 
                     visibleColumns[panel] = new Array(headers[panel].length).fill(true);
@@ -1533,8 +1549,8 @@
             const ntesSet = new Set();
             allData.manut.forEach(row => {
                 const val = row[IDX_NTE];
-                if (val !== undefined && val !== '') {
-                    ntesSet.add(val.toString().trim());
+                if (val !== undefined && val !== '' && val !== null) {
+                    ntesSet.add(String(val).trim());
                 }
             });
 
@@ -1559,8 +1575,8 @@
 
             const muniSet = new Set();
             allData.manut.forEach(row => {
-                const rowNte = row[IDX_NTE] ? row[IDX_NTE].toString().trim() : '';
-                const rowMuni = row[IDX_MUNICIPIO] ? row[IDX_MUNICIPIO].toString().trim() : '';
+                const rowNte = row[IDX_NTE] ? String(row[IDX_NTE]).trim() : '';
+                const rowMuni = row[IDX_MUNICIPIO] ? String(row[IDX_MUNICIPIO]).trim() : '';
 
                 if (rowMuni !== '') {
                     if (!selectedNte || rowNte === selectedNte) {
@@ -1740,8 +1756,10 @@
             remessaData = {};
             
             data.forEach(row => {
-                const remessaVal = row[remessaCol] !== undefined && row[remessaCol] !== '' ? 
-                    row[remessaCol].toString().trim() : '';
+                // Pega o valor da coluna de remessa, garantindo que seja string
+                const rawVal = row[remessaCol];
+                const remessaVal = (rawVal !== undefined && rawVal !== null && rawVal !== '') ? 
+                    String(rawVal).trim() : '';
                 if (remessaVal !== '') {
                     remessaData[remessaVal] = (remessaData[remessaVal] || 0) + 1;
                 }
@@ -1774,10 +1792,10 @@
                 
                 const isActive = selectedRemessa === key ? 'active' : '';
                 
-                const escapedKey = key.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+                const escapedKey = key.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
                 
                 html += `
-                    <div class="remessa-item ${isActive}" data-value="${key.replace(/"/g, '&quot;')}" onclick="selectRemessa('${escapedKey}')">
+                    <div class="remessa-item ${isActive}" data-value="${escapedKey}" onclick="selectRemessa('${escapedKey}')">
                         <span class="label">${key}</span>
                         <span class="badge ${badgeClass}">${count}</span>
                     </div>
@@ -1836,16 +1854,20 @@
                 let count = 0;
 
                 filteredData[panel] = allData[panel].filter(row => {
-                    const nte = row[IDX_NTE] ? row[IDX_NTE].toString().trim() : '';
-                    const muni = row[IDX_MUNICIPIO] ? row[IDX_MUNICIPIO].toString().trim().toLowerCase() : '';
-                    const codSec = row[IDX_COD_SEC] ? row[IDX_COD_SEC].toString().trim().toLowerCase() : '';
-                    const cartao = row[IDX_CARTAO] ? row[IDX_CARTAO].toString().trim().toLowerCase() : '';
-                    const remessa = row[remessaCol] !== undefined && row[remessaCol] !== '' ? 
-                        row[remessaCol].toString().trim() : '';
-                    const finalidade = row[finalidadeCol] ? row[finalidadeCol].toString().trim().toLowerCase() : '';
+                    const nte = row[IDX_NTE] ? String(row[IDX_NTE]).trim() : '';
+                    const muni = row[IDX_MUNICIPIO] ? String(row[IDX_MUNICIPIO]).trim().toLowerCase() : '';
+                    const codSec = row[IDX_COD_SEC] ? String(row[IDX_COD_SEC]).trim().toLowerCase() : '';
+                    const cartao = row[IDX_CARTAO] ? String(row[IDX_CARTAO]).trim().toLowerCase() : '';
+                    
+                    // Pega o valor da remessa garantindo que seja string
+                    const rawRemessa = row[remessaCol];
+                    const remessa = (rawRemessa !== undefined && rawRemessa !== null && rawRemessa !== '') ? 
+                        String(rawRemessa).trim() : '';
+                    
+                    const finalidade = row[finalidadeCol] ? String(row[finalidadeCol]).trim().toLowerCase() : '';
 
-                    const custeio = parseFloat(row[valorCusteioCol]) || 0;
-                    const capital = parseFloat(row[valorCapitalCol]) || 0;
+                    const custeio = parseFloat(String(row[valorCusteioCol]).replace(',', '.')) || 0;
+                    const capital = parseFloat(String(row[valorCapitalCol]).replace(',', '.')) || 0;
 
                     const matchNte = !nteVal || nte === nteVal;
                     const matchMuni = !muniVal || muni === muniVal;
@@ -1914,8 +1936,14 @@
                         const td = document.createElement('td');
                         
                         // PRIORIDADE 1: COLUNA DE REMESSA - exibir valor original sem formatação
+                        // TANTO NÚMEROS QUANTO TEXTOS DEVEM SER EXIBIDOS
                         if (colIdx === remessaCol) {
-                            td.textContent = (cellVal !== null && cellVal !== undefined && cellVal !== '') ? String(cellVal) : '';
+                            // Verifica se o valor existe e não é vazio
+                            if (cellVal !== undefined && cellVal !== null && cellVal !== '') {
+                                td.textContent = String(cellVal);
+                            } else {
+                                td.textContent = '';
+                            }
                         }
                         // PRIORIDADE 2: COLUNAS DE DATA
                         else if (colIdx === dataRemessaCol || colIdx === dataOutraCol) {
@@ -1927,15 +1955,15 @@
                         }
                         // PRIORIDADE 4: COLUNA T DA MANUTENÇÃO
                         else if (colIdx === colunaTNumero) {
-                            td.textContent = (cellVal !== null && cellVal !== undefined) ? String(cellVal) : '';
+                            td.textContent = (cellVal !== undefined && cellVal !== null) ? String(cellVal) : '';
                         }
                         // PRIORIDADE 5: OUTRAS COLUNAS NUMÉRICAS
                         else if (isNumericColumn(colIdx)) {
-                            td.textContent = (cellVal !== null && cellVal !== undefined) ? String(cellVal) : '';
+                            td.textContent = (cellVal !== undefined && cellVal !== null) ? String(cellVal) : '';
                         } 
                         // PRIORIDADE 6: TEXTO NORMAL
                         else {
-                            td.textContent = (cellVal !== null && cellVal !== undefined) ? String(cellVal) : '';
+                            td.textContent = (cellVal !== undefined && cellVal !== null) ? String(cellVal) : '';
                         }
                         td.title = td.textContent;
                         tr.appendChild(td);
