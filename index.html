@@ -1539,7 +1539,6 @@
             remessaData = {};
             
             data.forEach(row => {
-                // Pega o valor da coluna REMESSA (pode ser número ou texto)
                 const remessaVal = row[remessaCol] !== undefined && row[remessaCol] !== '' ? 
                     row[remessaCol].toString().trim() : '';
                 if (remessaVal !== '') {
@@ -1547,7 +1546,6 @@
                 }
             });
 
-            // Ordenar numericamente se for número
             const sortedKeys = Object.keys(remessaData).sort((a, b) => {
                 const numA = parseFloat(a);
                 const numB = parseFloat(b);
@@ -1633,9 +1631,7 @@
                     const remessa = row[remessaCol] !== undefined && row[remessaCol] !== '' ? 
                         row[remessaCol].toString().trim() : '';
 
-                    // Valor Custeio (coluna L para PNAE/FAED, coluna M para Manut)
                     const custeio = parseFloat(row[valorCusteioCol]) || 0;
-                    // Valor Capital (coluna N para Manut, 0 para PNAE/FAED)
                     const capital = parseFloat(row[valorCapitalCol]) || 0;
 
                     const matchNte = !nteVal || nte === nteVal;
@@ -1696,7 +1692,12 @@
                 row.forEach((cellVal, colIdx) => {
                     if (visibleColumns[panel][colIdx]) {
                         const td = document.createElement('td');
-                        if (typeof cellVal === 'number' && cellVal > 0) {
+                        
+                        // Verifica se é a coluna REMESSA (índice remessaCol)
+                        if (colIdx === getRemessaCol(panel)) {
+                            // Exibe como número puro, sem formatação de moeda
+                            td.textContent = cellVal !== null && cellVal !== undefined ? cellVal : '';
+                        } else if (typeof cellVal === 'number' && cellVal > 0) {
                             td.textContent = cellVal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                         } else {
                             td.textContent = cellVal !== null && cellVal !== undefined ? cellVal : '';
