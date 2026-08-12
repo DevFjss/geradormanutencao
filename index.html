@@ -89,7 +89,7 @@
             border-color: var(--primary-color);
         }
 
-        /* CARD DE VALIDAÇÃO DE REMESSA NO MENU */
+        /* CARD DE VALIDAÇÃO DE REMESSA */
         .card-remessa-validacao {
             background: #fff;
             border: 2px solid var(--primary-border);
@@ -219,7 +219,6 @@
             background: #fff;
         }
 
-        /* CABEÇALHO SUPERIOR */
         header {
             padding: 12px 24px;
             border-bottom: 1px solid var(--border-color);
@@ -285,7 +284,6 @@
             overflow: hidden;
         }
 
-        /* CAIXAS DE FILTRO DO CONTEÚDO */
         .filter-cards-row {
             display: grid;
             grid-template-columns: 1.2fr 1fr 1fr;
@@ -310,7 +308,6 @@
             margin-bottom: 6px;
         }
 
-        /* CARDS METRICAS / RESUMO */
         .metrics-row {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr 1fr;
@@ -339,7 +336,6 @@
             margin-top: 4px;
         }
 
-        /* BARRA DA TABELA */
         .table-controls {
             display: flex;
             justify-content: space-between;
@@ -394,12 +390,6 @@
             background: #e8f5e9;
         }
 
-        /* DESTAQUE DE TEXTO E NÚMERO NA REMESSA */
-        .cell-remessa {
-            font-weight: 700;
-            color: #1a1a1a;
-        }
-
         .cell-remessa-text {
             background: #fff3e0;
             color: #e65100;
@@ -416,7 +406,7 @@
     <aside>
         <div class="sidebar-title">
             <span><i class="fa-solid fa-filter"></i> Filtros</span>
-            <i class="fa-solid fa-angles-left" style="cursor: pointer;"></i>
+            <i class="fa-solid fa-angles-left"></i>
         </div>
 
         <div class="filter-group">
@@ -440,13 +430,13 @@
             </select>
         </div>
 
-        <!-- PAINEL DE VALIDAÇÃO DE REMESSA DA IMAGEM -->
+        <!-- VALIDAÇÃO REMESSA DA IMAGEM -->
         <div class="card-remessa-validacao">
             <div class="remessa-val-header">
                 <div class="remessa-val-title">
                     <i class="fa-solid fa-list-check"></i>
                     VALIDAÇÃO REMESSA
-                    <span class="badge-tab" id="badge-aba-nome">PNAE</span>
+                    <span class="badge-tab" id="badge-aba-nome">Pnae</span>
                 </div>
                 <span class="badge-count-total" id="total-itens-remessa">0</span>
             </div>
@@ -456,9 +446,7 @@
                 <input type="text" id="input-busca-remessa" placeholder="Filtrar remessa..." oninput="filtrarListaRemessasMenu()">
             </div>
 
-            <div class="remessa-list-box" id="container-lista-remessa">
-                <!-- Preenchido via JavaScript -->
-            </div>
+            <div class="remessa-list-box" id="container-lista-remessa"></div>
 
             <div style="display: flex; justify-content: space-between; font-size: 0.72rem; font-weight: 700; padding-top: 4px; border-top: 1px solid var(--border-color);">
                 <span>Total de Itens</span>
@@ -471,7 +459,7 @@
         </button>
     </aside>
 
-    <!-- ÁREA PRINCIPAL DA PLANILHA -->
+    <!-- ÁREA PRINCIPAL -->
     <main>
         <header>
             <div class="brand-title">
@@ -482,7 +470,7 @@
             </div>
         </header>
 
-        <!-- TABS DE NAVEGAÇÃO -->
+        <!-- TABS DE APOSTAS / ABAS -->
         <div class="tabs-bar">
             <button class="tab-item active" id="tab-pnae" onclick="trocarAba('Backup_Remessa_Pnae')">
                 <i class="fa-solid fa-utensils"></i> PNAE
@@ -496,7 +484,6 @@
         </div>
 
         <div class="container-body">
-            <!-- CAIXAS DE PESQUISA SUPERIORES -->
             <div class="filter-cards-row">
                 <div class="filter-card">
                     <label><i class="fa-solid fa-barcode"></i> Código SEC</label>
@@ -514,7 +501,6 @@
                 </div>
             </div>
 
-            <!-- CARDS DE MÉTRICAS -->
             <div class="metrics-row">
                 <div class="metric-card">
                     <div class="title">TOTAL DE REGISTROS</div>
@@ -534,16 +520,14 @@
                 </div>
             </div>
 
-            <!-- CONTROLES DA TABELA -->
             <div class="table-controls">
                 <button class="btn-colunas"><i class="fa-solid fa-table-columns"></i> Colunas <i class="fa-solid fa-chevron-down"></i></button>
                 <div>Exibindo <strong id="lbl-exibindo-qtd">0</strong> de <strong id="lbl-total-qtd">0</strong></div>
             </div>
 
-            <!-- TABELA DE DADOS -->
             <div class="table-wrapper">
                 <table>
-                    <thead id="thead-main">
+                    <thead>
                         <tr>
                             <th>DIRETOR(A)</th>
                             <th>ID CUSTRO</th>
@@ -565,31 +549,24 @@
     </main>
 
     <script>
-        // DADOS MOCKADOS IDÊNTICOS À SUA IMAGEM
-        const MOCK_DATA = {
-            'Backup_Remessa_Pnae': [
-                ["NTE-01", "SALVADOR", "RECURSO-01", "1120915", "ESCOLA A", "LUCIMONE DO...", "124065815", "40986900067...", "R$ 21.023,20", "R$ 21.024,00", "R$ 21.024,00", "845", "27/02/2026", "1ª parcela"],
-                ["NTE-01", "SALVADOR", "RECURSO-01", "1120915", "ESCOLA B", "LUCIMONE DO...", "124065815", "40986900067...", "R$ 21.023,20", "R$ 21.024,00", "R$ 42.047,00", "857", "13/03/2026", "2ª parcela"],
-                ["NTE-01", "SALVADOR", "RECURSO-01", "1120915", "ESCOLA C", "ANA RAQUEL ...", "186241084", "40986900548...", "R$ 21.719,20", "R$ 21.720,00", "R$ 63.767,00", "BB DIGITAL", "26/05/2026", "3ª parcela"],
-                ["NTE-01", "SALVADOR", "RECURSO-01", "1120915", "ESCOLA D", "ANA RAQUEL ...", "186241084", "40986900548...", "R$ 21.719,20", "R$ 21.720,00", "R$ 43.439,00", "897", "01/06/2026", "4ª parcela"],
-                ["NTE-01", "SALVADOR", "RECURSO-01", "1120915", "ESCOLA E", "ANA RAQUEL ...", "186241084", "40986900548...", "R$ 42.047,00", "R$ 42.047,00", "R$ 85.486,00", "898", "01/06/2026", "RESGATE"],
-                ["NTE-01", "SALVADOR", "RECURSO-01", "1120915", "ESCOLA F", "ANA RAQUEL ...", "186241084", "40986900548...", "R$ 21.719,20", "R$ 21.720,00", "R$ 63.767,00", "899", "08/06/2026", "5ª parcela"],
-                ["NTE-01", "SALVADOR", "RECURSO-01", "1120915", "ESCOLA G", "ANA RAQUEL ...", "186241084", "40986900548...", "R$ 21.719,20", "R$ 21.720,00", "R$ 85.486,00", "908", "08/07/2026", "6ª parcela"],
-                ["NTE-01", "SALVADOR", "RECURSO-01", "1120915", "ESCOLA H", "ANA RAQUEL ...", "186241084", "40986900548...", "R$ 21.719,20", "R$ 21.720,00", "R$ 107.205,00", "946", "07/08/2026", "7ª parcela"]
-            ],
-            'Backup_Remessa_Faed': [],
-            'Backup_Remessa_Manut': []
-        };
+        // ID DA PLANILHA GOOGLE (Substitua se necessário)
+        const SHEET_ID = 'SUA_ID_DA_PLANILHA_AQUI';
 
         let abaAtual = 'Backup_Remessa_Pnae';
         let dadosCarregados = [];
         let filtroRemessaSelecionada = null;
 
-        // EXTRAÇÃO INDEPENDENTE DE TIPO (NÚMERO OU TEXTO COMO "BB DIGITAL")
+        // MAPEAR COLUNA DE REMESSA:
+        // Coluna M = Índice 12 (PNAE e FAED)
+        // Coluna O = Índice 14 (Manutenção)
+        function obterIndiceRemessa(nomeAba) {
+            return (nomeAba === 'Backup_Remessa_Manut') ? 14 : 12;
+        }
+
+        // Lê qualquer tipo de dado (texto como BB DIGITAL ou número)
         function extrairValorRemessa(linha, nomeAba) {
-            let idx = (nomeAba === 'Backup_Remessa_Manut') ? 14 : 11; 
-            // Em arranjo dinamico de colunas
-            if (linha.length > 11) {
+            let idx = obterIndiceRemessa(nomeAba);
+            if (linha && linha.length > idx) {
                 let val = linha[idx];
                 if (val !== undefined && val !== null) {
                     return String(val).trim();
@@ -598,42 +575,101 @@
             return "";
         }
 
+        // PARSER CSV INTEGRADO (SEM BIBLIOTECAS EXTERNAS)
+        function parseCSV(text) {
+            let lines = [];
+            let row = [];
+            let inQuotes = false;
+            let current = '';
+
+            for (let i = 0; i < text.length; i++) {
+                let c = text[i];
+                let next = text[i + 1];
+
+                if (c === '"') {
+                    if (inQuotes && next === '"') {
+                        current += '"';
+                        i++;
+                    } else {
+                        inQuotes = !inQuotes;
+                    }
+                } else if (c === ',' && !inQuotes) {
+                    row.push(current);
+                    current = '';
+                } else if ((c === '\r' || c === '\n') && !inQuotes) {
+                    if (c === '\r' && next === '\n') i++;
+                    row.push(current);
+                    if (row.length > 1 || row[0] !== '') lines.push(row);
+                    row = [];
+                    current = '';
+                } else {
+                    current += c;
+                }
+            }
+            if (current || row.length > 0) {
+                row.push(current);
+                lines.push(row);
+            }
+            return lines;
+        }
+
+        // BUSCA DADOS DIRETO DA GOOGLE SHEETS
+        async function carregarDadosPlanilha(nomeAba) {
+            const tbody = document.getElementById('tbody-dados');
+            tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;">Lendo aba ${nomeAba}...</td></tr>`;
+
+            const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(nomeAba)}`;
+
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error("Erro ao acessar planilha");
+
+                const textData = await response.text();
+                let rows = parseCSV(textData);
+
+                // Remove linha de cabeçalho
+                if (rows.length > 0) rows.shift();
+
+                dadosCarregados = rows;
+                processarInterface();
+            } catch (err) {
+                console.warn("Erro ao buscar via fetch. Usando simulação...", err);
+                carregarSimulacao(nomeAba);
+            }
+        }
+
+        // SIMULAÇÃO LOCAL SE NÃO HOUVER SHEET_ID CONFIGURADO
+        function carregarSimulacao(nomeAba) {
+            if (nomeAba === 'Backup_Remessa_Pnae') {
+                dadosCarregados = [
+                    ["NTE-01", "SALVADOR", "RECURSO-01", "1120915", "ESCOLA A", "LUCIMONE DO...", "124065815", "40986900067...", "R$ 21.023,20", "R$ 21.024,00", "R$ 21.024,00", "21024", "845", "27/02/2026", "1ª parcela"],
+                    ["NTE-01", "SALVADOR", "RECURSO-01", "1120915", "ESCOLA B", "LUCIMONE DO...", "124065815", "40986900067...", "R$ 21.023,20", "R$ 21.024,00", "R$ 42.047,00", "42047", "857", "13/03/2026", "2ª parcela"],
+                    ["NTE-01", "SALVADOR", "RECURSO-01", "1120915", "ESCOLA C", "ANA RAQUEL ...", "186241084", "40986900548...", "R$ 21.719,20", "R$ 21.720,00", "R$ 63.767,00", "63767", "BB DIGITAL", "26/05/2026", "3ª parcela"],
+                    ["NTE-01", "SALVADOR", "RECURSO-01", "1120915", "ESCOLA D", "ANA RAQUEL ...", "186241084", "40986900548...", "R$ 21.719,20", "R$ 21.720,00", "R$ 43.439,00", "43439", "897", "01/06/2026", "4ª parcela"],
+                    ["NTE-01", "SALVADOR", "RECURSO-01", "1120915", "ESCOLA E", "ANA RAQUEL ...", "186241084", "40986900548...", "R$ 42.047,00", "R$ 42.047,00", "R$ 85.486,00", "85486", "898", "01/06/2026", "RESGATE"],
+                    ["NTE-01", "SALVADOR", "RECURSO-01", "1120915", "ESCOLA F", "ANA RAQUEL ...", "186241084", "40986900548...", "R$ 21.719,20", "R$ 21.720,00", "R$ 63.767,00", "63767", "899", "08/06/2026", "5ª parcela"],
+                    ["NTE-01", "SALVADOR", "RECURSO-01", "1120915", "ESCOLA G", "ANA RAQUEL ...", "186241084", "40986900548...", "R$ 21.719,20", "R$ 21.720,00", "R$ 85.486,00", "85486", "908", "08/07/2026", "6ª parcela"],
+                    ["NTE-01", "SALVADOR", "RECURSO-01", "1120915", "ESCOLA H", "ANA RAQUEL ...", "186241084", "40986900548...", "R$ 21.719,20", "R$ 21.720,00", "R$ 107.205,00", "107205", "946", "07/08/2026", "7ª parcela"]
+                ];
+            } else {
+                dadosCarregados = [];
+            }
+            processarInterface();
+        }
+
         function trocarAba(nomeAba) {
             abaAtual = nomeAba;
             filtroRemessaSelecionada = null;
+
             document.getElementById('lbl-nome-aba').textContent = nomeAba;
             document.getElementById('badge-aba-nome').textContent = nomeAba.replace('Backup_Remessa_', '');
 
-            document.querySelectorAll('.tab-item').forEach(b => b.classList.remove('active'));
-            if(nomeAba.includes('Pnae')) document.getElementById('tab-pnae').classList.add('active');
-            if(nomeAba.includes('Faed')) document.getElementById('tab-faed').classList.add('active');
-            if(nomeAba.includes('Manut')) document.getElementById('tab-manut').classList.add('active');
+            document.querySelectorAll('.tab-item').forEach(btn => btn.classList.remove('active'));
+            if (nomeAba.includes('Pnae')) document.getElementById('tab-pnae').classList.add('active');
+            if (nomeAba.includes('Faed')) document.getElementById('tab-faed').classList.add('active');
+            if (nomeAba.includes('Manut')) document.getElementById('tab-manut').classList.add('active');
 
             carregarDadosPlanilha(nomeAba);
-        }
-
-        function carregarDadosPlanilha(nomeAba) {
-            const tbody = document.getElementById('tbody-dados');
-            tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;">Buscando dados da planilha...</td></tr>`;
-
-            if (typeof google !== 'undefined' && google.script && google.script.run) {
-                google.script.run
-                    .withSuccessHandler(res => {
-                        if (res.success) {
-                            dadosCarregados = res.data;
-                            processarInterface();
-                        } else {
-                            tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color:red;">${res.error}</td></tr>`;
-                        }
-                    })
-                    .getDadosAba(nomeAba);
-            } else {
-                // Modo Fallback Local
-                setTimeout(() => {
-                    dadosCarregados = MOCK_DATA[nomeAba] || [];
-                    processarInterface();
-                }, 200);
-            }
         }
 
         function processarInterface() {
@@ -676,11 +712,7 @@
         }
 
         function selecionarFiltroRemessa(chave) {
-            if (filtroRemessaSelecionada === chave) {
-                filtroRemessaSelecionada = null;
-            } else {
-                filtroRemessaSelecionada = chave;
-            }
+            filtroRemessaSelecionada = (filtroRemessaSelecionada === chave) ? null : chave;
             gerarMenuValidacaoRemessa();
             renderTable();
         }
@@ -699,30 +731,23 @@
             const cartao = document.getElementById('input-cartao').value.toLowerCase().trim();
             const finalidade = document.getElementById('input-finalidade').value.toLowerCase().trim();
 
+            let idxRem = obterIndiceRemessa(abaAtual);
+
             let dadosFiltrados = dadosCarregados.filter(row => {
                 let remessaVal = extrairValorRemessa(row, abaAtual);
-                
-                // Evita repetir cabeçalho
                 if (remessaVal === 'REMESSA' || remessaVal === 'Remessa') return false;
 
-                // Filtro por clique no menu de validação remessa
                 if (filtroRemessaSelecionada && remessaVal !== filtroRemessaSelecionada) {
                     return false;
                 }
 
-                // Filtro Código SEC
                 if (codSec && !String(row[3] || '').toLowerCase().includes(codSec)) return false;
-
-                // Filtro Cartão
                 if (cartao && !String(row[7] || '').toLowerCase().includes(cartao)) return false;
-
-                // Filtro Finalidade
-                if (finalidade && !String(row[13] || '').toLowerCase().includes(finalidade)) return false;
+                if (finalidade && !String(row[14] || row[13] || '').toLowerCase().includes(finalidade)) return false;
 
                 return true;
             });
 
-            // Atualiza Contadores
             document.getElementById('metric-total-registros').textContent = dadosFiltrados.length;
             document.getElementById('lbl-exibindo-qtd').textContent = dadosFiltrados.length;
             document.getElementById('lbl-total-qtd').textContent = dadosCarregados.length;
@@ -735,12 +760,13 @@
             let html = '';
             dadosFiltrados.forEach(row => {
                 let remessaVal = extrairValorRemessa(row, abaAtual);
-                
-                // Formatação diferenciada para texto ("BB DIGITAL") ou número
-                let remessaHtml = isNaN(remessaVal) 
-                    ? `<span class="cell-remessa-text">${remessaVal}</span>` 
-                    : `<span class="cell-remessa">${remessaVal}</span>`;
+                let isText = isNaN(remessaVal) && remessaVal !== '';
 
+                let remessaHtml = isText 
+                    ? `<span class="cell-remessa-text">${remessaVal}</span>` 
+                    : `<strong>${remessaVal}</strong>`;
+
+                // Posições baseadas nas colunas reais da aba
                 html += `
                     <tr>
                         <td>${row[5] || ''}</td>
@@ -750,8 +776,8 @@
                         <td>${row[9] || ''}</td>
                         <td>${row[10] || ''}</td>
                         <td>${remessaHtml}</td>
-                        <td>${row[12] || ''}</td>
-                        <td>${row[13] || ''}</td>
+                        <td>${row[idxRem + 1] || ''}</td>
+                        <td>${row[idxRem + 2] || ''}</td>
                     </tr>
                 `;
             });
