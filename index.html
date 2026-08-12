@@ -30,16 +30,12 @@
             --danger: #c62828;
             --blue-divider: #1a73e8;
 
-            /* Cores dos painéis */
             --pnae-color: #1565C0;
             --pnae-light: #e3f2fd;
-            --pnae-bg: #f0f7ff;
             --faed-color: #E65100;
             --faed-light: #fff3e0;
-            --faed-bg: #fff8f0;
             --manut-color: #546E7A;
             --manut-light: #eceff1;
-            --manut-bg: #f5f7f8;
         }
 
         body {
@@ -50,7 +46,6 @@
             overflow: hidden;
         }
 
-        /* ===== SIDEBAR ===== */
         aside {
             width: var(--sidebar-width);
             min-width: var(--sidebar-width);
@@ -202,7 +197,6 @@
             background: #1b5e20;
         }
 
-        /* ===== SEÇÃO REMESSA ===== */
         .remessa-section {
             background: #fff;
             border-radius: 10px;
@@ -453,7 +447,6 @@
             display: flex;
         }
 
-        /* ===== MAIN ===== */
         main {
             flex: 1;
             display: flex;
@@ -514,7 +507,6 @@
             50% { opacity: 0.4; }
         }
 
-        /* ===== ABAS ===== */
         .tabs-container {
             background: #fff;
             border-bottom: 2px solid var(--border-color);
@@ -561,7 +553,6 @@
             transition: transform 0.3s;
         }
 
-        /* Cores das abas */
         .tab-btn.tab-pnae.active { border-bottom-color: var(--pnae-color); }
         .tab-btn.tab-pnae .tab-icon { color: var(--pnae-color); }
         .tab-btn.tab-pnae:hover { color: var(--pnae-color); }
@@ -574,7 +565,6 @@
         .tab-btn.tab-manut .tab-icon { color: var(--manut-color); }
         .tab-btn.tab-manut:hover { color: var(--manut-color); }
 
-        /* ===== CONTEÚDO ===== */
         .content-body {
             padding: 16px 24px;
             overflow: hidden;
@@ -596,7 +586,6 @@
             display: flex;
         }
 
-        /* ===== DIVISÃO AZUL ===== */
         .blue-divider {
             background: linear-gradient(90deg, var(--blue-divider), #4fc3f7);
             height: 3px;
@@ -607,7 +596,6 @@
             box-shadow: 0 1px 4px rgba(26, 115, 232, 0.2);
         }
 
-        /* ===== CAIXAS DE PESQUISA ===== */
         .search-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -637,7 +625,6 @@
             color: var(--sidebar-header);
         }
 
-        /* ===== CARDS RESUMO ===== */
         .metrics-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -668,7 +655,6 @@
             margin-top: 2px;
         }
 
-        /* ===== CONTROLES ===== */
         .controls-bar {
             background: #fff;
             padding: 8px 16px;
@@ -765,7 +751,6 @@
             color: var(--text-dark);
         }
 
-        /* ===== TABELA ===== */
         .table-container {
             background: #fff;
             border-radius: 10px;
@@ -912,7 +897,6 @@
             font-weight: 600;
         }
 
-        /* ===== RESPONSIVO ===== */
         @media (max-width: 900px) {
             .search-grid { grid-template-columns: 1fr; }
             .metrics-grid { grid-template-columns: repeat(2, 1fr); }
@@ -937,7 +921,6 @@
         <i class="fa-solid fa-angles-right"></i>
     </button>
 
-    <!-- ===== SIDEBAR ===== -->
     <aside id="sidebar">
         <div class="sidebar-header">
             <h2><i class="fa-solid fa-sliders-h"></i> Filtros</h2>
@@ -969,7 +952,6 @@
             </select>
         </div>
 
-        <!-- ===== SEÇÃO REMESSA ===== -->
         <div class="remessa-section" id="remessa-section">
             <div class="remessa-header" onclick="toggleRemessa()">
                 <div class="section-title">
@@ -1007,7 +989,6 @@
         </button>
     </aside>
 
-    <!-- ===== MAIN ===== -->
     <main>
         <header>
             <h1><i class="fa-solid fa-chart-pie"></i> <span id="painel-title">Sistema de Gestão</span></h1>
@@ -1023,7 +1004,6 @@
             </div>
         </header>
 
-        <!-- ===== ABAS ===== -->
         <div class="tabs-container">
             <button class="tab-btn tab-pnae" data-tab="pnae" onclick="switchTab('pnae')">
                 <i class="fas fa-utensils tab-icon"></i> PNAE
@@ -1038,7 +1018,6 @@
 
         <div class="content-body">
             
-            <!-- ===== PANEL PNAE ===== -->
             <div class="panel-content" id="panel-pnae">
                 <div class="blue-divider"></div>
                 <div class="search-grid">
@@ -1089,7 +1068,6 @@
                 </div>
             </div>
 
-            <!-- ===== PANEL FAED ===== -->
             <div class="panel-content" id="panel-faed">
                 <div class="blue-divider"></div>
                 <div class="search-grid">
@@ -1140,7 +1118,6 @@
                 </div>
             </div>
 
-            <!-- ===== PANEL MANUTENÇÃO ===== -->
             <div class="panel-content active" id="panel-manut">
                 <div class="blue-divider"></div>
                 <div class="search-grid">
@@ -1204,31 +1181,28 @@
                 color: '#1565C0',
                 name: 'PNAE',
                 icon: 'fa-utensils',
-                remessaCol: 12,     // Coluna M - REMESSA (número)
-                valorCusteioCol: 11, // Coluna L - VALOR CUSTEIO
-                hasCusteioCapital: true,
-                cardLabels: ['Total de Registros', 'Total Custeio', 'Total Capital', 'Soma Geral']
+                remessaCol: 12,
+                valorCusteioCol: 11,
+                hasCusteioCapital: true
             },
             faed: {
                 sheet: 'Backup_Remessa_Faed',
                 color: '#E65100',
                 name: 'FAED',
                 icon: 'fa-hand-holding-heart',
-                remessaCol: 12,     // Coluna M - REMESSA (número)
-                valorCusteioCol: 11, // Coluna L - VALOR CUSTEIO
-                hasCusteioCapital: true,
-                cardLabels: ['Total de Registros', 'Total Custeio', 'Total Capital', 'Soma Geral']
+                remessaCol: 12,
+                valorCusteioCol: 11,
+                hasCusteioCapital: true
             },
             manut: {
                 sheet: 'Backup_Remessa_Manut',
                 color: '#546E7A',
                 name: 'Manutenção',
                 icon: 'fa-tools',
-                remessaCol: 14,     // Coluna O - REMESSA
-                valorCusteioCol: 12, // Coluna M - CUSTEIO
-                valorCapitalCol: 13, // Coluna N - CAPITAL
-                hasCusteioCapital: true,
-                cardLabels: ['Total de Registros', 'Total Custeio', 'Total Capital', 'Soma Geral']
+                remessaCol: 14,
+                valorCusteioCol: 12,
+                valorCapitalCol: 13,
+                hasCusteioCapital: true
             }
         };
 
@@ -1247,13 +1221,11 @@
         let isRemessaExpanded = true;
         let currentTab = 'manut';
 
-        // Índices das colunas comuns
         const IDX_NTE = 0;
         const IDX_MUNICIPIO = 1;
         const IDX_COD_SEC = 2;
         const IDX_CARTAO = 8;
 
-        // ===== FUNÇÕES AUXILIARES =====
         function debounce(func, delay) {
             let timeoutId;
             return function(...args) {
@@ -1274,24 +1246,16 @@
             return PANELS[panel]?.valorCapitalCol || 12;
         }
 
-        function hasCusteioCapital(panel) {
-            return PANELS[panel]?.hasCusteioCapital || false;
-        }
-
-        // ===== INICIALIZAÇÃO =====
         document.addEventListener('DOMContentLoaded', () => {
-            // Carregar todos os painéis
             Object.keys(PANELS).forEach(panel => {
                 loadPanelData(panel);
             });
 
-            // Event listeners para pesquisa
             document.querySelectorAll('.search-input').forEach(input => {
                 const debounced = debounce(() => applyFilters(input.dataset.panel), DEBOUNCE_DELAY);
                 input.addEventListener('input', debounced);
             });
 
-            // Filtros do sidebar
             document.getElementById('filter-nte').addEventListener('change', () => {
                 updateMunicipioDropdown();
                 applyFilters(currentTab);
@@ -1299,7 +1263,6 @@
             document.getElementById('filter-municipio').addEventListener('change', () => applyFilters(currentTab));
             document.getElementById('filter-tipo-valor').addEventListener('change', () => applyFilters(currentTab));
 
-            // Fechar dropdowns
             document.addEventListener('click', (e) => {
                 document.querySelectorAll('.column-toggle-wrapper').forEach(wrapper => {
                     if (!wrapper.contains(e.target)) {
@@ -1310,7 +1273,6 @@
             });
         });
 
-        // ===== TOGGLE SIDEBAR =====
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const btnShow = document.getElementById('btn-show-sidebar');
@@ -1318,7 +1280,6 @@
             btnShow.classList.toggle('visible', sidebar.classList.contains('collapsed'));
         }
 
-        // ===== TOGGLE REMESSA =====
         function toggleRemessa() {
             isRemessaExpanded = !isRemessaExpanded;
             const body = document.getElementById('remessa-body');
@@ -1332,19 +1293,15 @@
             }
         }
 
-        // ===== SWITCH TAB =====
         function switchTab(tab) {
             currentTab = tab;
             
-            // Atualizar abas
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelector(`.tab-btn[data-tab="${tab}"]`).classList.add('active');
             
-            // Atualizar painéis
             document.querySelectorAll('.panel-content').forEach(p => p.classList.remove('active'));
             document.getElementById(`panel-${tab}`).classList.add('active');
             
-            // Atualizar título e status
             const panelInfo = PANELS[tab];
             document.getElementById('painel-title').textContent = `Gerador ${panelInfo.name}`;
             document.getElementById('sheet-name').textContent = panelInfo.sheet;
@@ -1352,19 +1309,13 @@
             const dot = document.getElementById('status-dot');
             dot.className = `status-dot ${tab}`;
             
-            // Atualizar indicador da remessa
             const indicator = document.getElementById('remessa-panel-indicator');
             indicator.textContent = tab.toUpperCase();
             indicator.style.background = panelInfo.color;
             
-            // Atualizar remessa
-            buildRemessaList();
-            
-            // Reaplicar filtros
             applyFilters(tab);
         }
 
-        // ===== CARREGAR DADOS DO PAINEL =====
         function loadPanelData(panel) {
             const sheetName = PANELS[panel].sheet;
             const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?sheet=${encodeURIComponent(sheetName)}&tqx=out:json`;
@@ -1393,18 +1344,12 @@
                     renderHeader(panel);
                     applyFilters(panel);
 
-                    // Mostrar tabela
                     const loading = document.querySelector(`.${panel}-loading`);
                     const table = document.querySelector(`.${panel}-table`);
                     const pagination = document.querySelector(`.${panel}-pagination`);
                     if (loading) loading.style.display = 'none';
                     if (table) table.style.display = 'table';
                     if (pagination) pagination.style.display = 'flex';
-                    
-                    // Construir remessa para o painel atual
-                    if (panel === currentTab) {
-                        buildRemessaList();
-                    }
                 })
                 .catch(err => {
                     console.error(`Erro ao carregar ${panel}:`, err);
@@ -1419,7 +1364,6 @@
                 });
         }
 
-        // ===== POPULATE NTE DROPDOWN =====
         function populateNteDropdown() {
             const nteSelect = document.getElementById('filter-nte');
             nteSelect.innerHTML = '<option value="">Todos os NTEs</option>';
@@ -1472,7 +1416,6 @@
             });
         }
 
-        // ===== BUILD COLUMN DROPDOWN =====
         function buildColumnDropdown(panel) {
             const dropdown = document.getElementById(`dropdown-${panel}`);
             if (!dropdown) return;
@@ -1530,10 +1473,9 @@
             });
         }
 
-        // ===== BUILD REMESSA LIST =====
-        function buildRemessaList() {
-            const panel = currentTab;
-            const data = allData[panel] || [];
+        // ===== FUNÇÃO PARA ATUALIZAR A LISTA DE REMESSA COM BASE NOS DADOS FILTRADOS =====
+        function updateRemessaList(panel) {
+            const data = filteredData[panel] || [];
             const remessaCol = getRemessaCol(panel);
             
             remessaData = {};
@@ -1600,7 +1542,6 @@
             applyFilters(currentTab);
         }
 
-        // ===== APLICAR FILTROS =====
         function applyFilters(panel) {
             if (!panel) panel = currentTab;
             if (isProcessing || allData[panel].length === 0) return;
@@ -1655,7 +1596,6 @@
                     return match;
                 });
 
-                // Atualizar cards
                 const prefix = panel;
                 document.querySelector(`.${prefix}-total`).textContent = count;
                 document.querySelector(`.${prefix}-custeio`).textContent = totalCusteio.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -1667,12 +1607,14 @@
 
                 currentPage[panel] = 1;
                 renderPage(panel);
+                
+                // ===== ATUALIZA A LISTA DE REMESSA COM OS DADOS FILTRADOS =====
+                updateRemessaList(panel);
 
                 isProcessing = false;
             }, 50);
         }
 
-        // ===== RENDERIZAR PÁGINA =====
         function renderPage(panel) {
             const totalItems = filteredData[panel].length;
             totalPages[panel] = Math.ceil(totalItems / ITEMS_PER_PAGE) || 1;
@@ -1692,10 +1634,7 @@
                 row.forEach((cellVal, colIdx) => {
                     if (visibleColumns[panel][colIdx]) {
                         const td = document.createElement('td');
-                        
-                        // Verifica se é a coluna REMESSA (índice remessaCol)
                         if (colIdx === getRemessaCol(panel)) {
-                            // Exibe como número puro, sem formatação de moeda
                             td.textContent = cellVal !== null && cellVal !== undefined ? cellVal : '';
                         } else if (typeof cellVal === 'number' && cellVal > 0) {
                             td.textContent = cellVal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -1722,7 +1661,6 @@
             document.querySelector(`.${panel}-next`).disabled = currentPage[panel] >= totalPages[panel];
         }
 
-        // ===== MUDAR PÁGINA =====
         function changePage(panel, delta) {
             const newPage = currentPage[panel] + delta;
             if (newPage >= 1 && newPage <= totalPages[panel]) {
@@ -1733,7 +1671,6 @@
             }
         }
 
-        // ===== RESETAR FILTROS =====
         function resetFilters() {
             document.getElementById('filter-nte').value = '';
             document.getElementById('filter-tipo-valor').value = 'todos';
