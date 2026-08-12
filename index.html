@@ -1227,6 +1227,9 @@
         const IDX_COD_SEC = 2;
         const IDX_CARTAO = 8;
 
+        // Colunas que SÃO números e NÃO devem ser formatadas como moeda
+        const NUMERIC_COLUMNS = [0, 2, 3, 4, 8, 12, 13, 14]; // NTE, Cod.SEC, Cod.Custo, Cod.INEP, cartão, remessa
+
         function debounce(func, delay) {
             let timeoutId;
             return function(...args) {
@@ -1245,6 +1248,11 @@
 
         function getValorCapitalCol(panel) {
             return PANELS[panel]?.valorCapitalCol || 12;
+        }
+
+        // Verifica se a coluna deve ser exibida como número (sem formatação de moeda)
+        function isNumericColumn(colIdx) {
+            return NUMERIC_COLUMNS.includes(colIdx);
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -1633,9 +1641,13 @@
                 row.forEach((cellVal, colIdx) => {
                     if (visibleColumns[panel][colIdx]) {
                         const td = document.createElement('td');
-                        if (colIdx === getRemessaCol(panel)) {
+                        
+                        // Verifica se é uma coluna numérica (NTE, Cod.SEC, etc.)
+                        if (isNumericColumn(colIdx)) {
+                            // Exibe como número puro, sem formatação de moeda
                             td.textContent = cellVal !== null && cellVal !== undefined ? cellVal : '';
                         } else if (typeof cellVal === 'number' && cellVal > 0) {
+                            // Formata como moeda apenas para colunas de valor
                             td.textContent = cellVal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                         } else {
                             td.textContent = cellVal !== null && cellVal !== undefined ? cellVal : '';
@@ -1670,30 +1682,19 @@
             }
         }
 
-        // ===== FUNÇÃO CORRIGIDA DE LIMPAR FILTROS =====
         function resetAllFilters() {
-            // Limpar selects
             document.getElementById('filter-nte').value = '';
             document.getElementById('filter-municipio').value = '';
             document.getElementById('filter-tipo-valor').value = 'todos';
             
-            // Limpar inputs de pesquisa
             document.querySelectorAll('.search-input').forEach(input => input.value = '');
-            
-            // Limpar pesquisa da remessa
             document.getElementById('remessa-search-input').value = '';
             
-            // Limpar seleção de remessa
             selectedRemessa = null;
             document.querySelectorAll('.remessa-item').forEach(el => el.classList.remove('active'));
             
-            // Atualizar dropdown de municípios
             updateMunicipioDropdown();
-            
-            // Aplicar filtros (isso vai recarregar a tabela e a lista de remessa)
             applyFilters(currentTab);
-            
-            // Limpar filtro de pesquisa da lista de remessa
             filterRemessaList();
         }
     </script>
