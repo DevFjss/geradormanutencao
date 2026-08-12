@@ -16,7 +16,7 @@
         }
 
         :root {
-            --sidebar-width: 310px;
+            --sidebar-width: 320px;
             --sidebar-bg: #f0f7f0;
             --sidebar-header: #2e7d32;
             --bg-body: #f4f7f6;
@@ -39,7 +39,7 @@
             overflow: hidden;
         }
 
-        /* BARRA LATERAL / ASIDE */
+        /* BARRA LATERAL / MENU */
         aside {
             width: var(--sidebar-width);
             min-width: var(--sidebar-width);
@@ -47,11 +47,12 @@
             border-right: 1px solid #c8e6c9;
             display: flex;
             flex-direction: column;
-            padding: 20px 18px;
+            padding: 18px 16px;
             overflow-y: auto;
             z-index: 10;
             transition: all 0.3s ease;
             height: 100vh;
+            gap: 14px;
         }
 
         aside.collapsed {
@@ -69,7 +70,6 @@
             align-items: center;
             justify-content: space-between;
             color: var(--sidebar-header);
-            margin-bottom: 16px;
             padding-bottom: 10px;
             border-bottom: 2px solid #a5d6a7;
         }
@@ -86,8 +86,8 @@
             background: var(--sidebar-header);
             color: #fff;
             border: none;
-            width: 32px;
-            height: 32px;
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
             cursor: pointer;
             display: flex;
@@ -100,43 +100,107 @@
             background: #1b5e20;
         }
 
-        /* PAINEL DE REMESSA */
+        /* PESQUISA GERAL NO MENU */
+        .filter-section-title {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--sidebar-header);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .input-group-search {
+            position: relative;
+        }
+
+        .input-group-search input {
+            width: 100%;
+            padding: 8px 10px 8px 32px;
+            border: 1px solid #a5d6a7;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            outline: none;
+            background: #fff;
+            transition: border-color 0.2s;
+        }
+
+        .input-group-search input:focus {
+            border-color: var(--sidebar-header);
+            box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.15);
+        }
+
+        .input-group-search i {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        /* CARDS DE RESUMO NO MENU */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .card-stat {
+            background: #fff;
+            border-radius: 8px;
+            padding: 10px;
+            border: 1px solid #c8e6c9;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .card-stat .card-title {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .card-stat .card-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--sidebar-header);
+        }
+
+        /* PAINEL DE VALIDAÇÃO DE REMESSA NO MENU */
         .remessa-section {
             background: #fff;
             border-radius: 10px;
-            padding: 14px 16px;
-            margin-bottom: 14px;
+            padding: 12px;
             border: 2px solid #a5d6a7;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
         .remessa-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            cursor: pointer;
-            user-select: none;
         }
 
-        .remessa-header .section-title {
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: var(--sidebar-header);
-            text-transform: uppercase;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .remessa-header .panel-indicator {
-            font-size: 0.6rem;
+        .panel-indicator {
+            font-size: 0.65rem;
             background: var(--sidebar-header);
             color: #fff;
             padding: 2px 8px;
             border-radius: 10px;
+            font-weight: 700;
         }
 
         .badge-count {
-            font-size: 0.65rem;
+            font-size: 0.68rem;
             font-weight: 700;
             padding: 2px 8px;
             border-radius: 10px;
@@ -144,36 +208,13 @@
             color: #fff;
         }
 
-        .remessa-search {
-            position: relative;
-            margin: 10px 0;
-        }
-
-        .remessa-search input {
-            width: 100%;
-            padding: 7px 10px 7px 32px;
-            border: 1px solid #c8e6c9;
-            border-radius: 6px;
-            font-size: 0.78rem;
-            outline: none;
-        }
-
-        .remessa-search input:focus {
-            border-color: var(--sidebar-header);
-        }
-
-        .remessa-search i {
-            position: absolute;
-            left: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-muted);
-            font-size: 0.8rem;
-        }
-
         .remessa-list-container {
-            max-height: 220px;
+            max-height: 200px;
             overflow-y: auto;
+            border: 1px solid #e8f5e9;
+            border-radius: 6px;
+            padding: 4px;
+            background: #fafdfa;
         }
 
         .remessa-item {
@@ -183,25 +224,26 @@
             padding: 6px 10px;
             border-radius: 6px;
             margin-bottom: 4px;
-            background: #f8fbf8;
+            background: #ffffff;
             transition: all 0.2s;
             cursor: pointer;
-            border: 1px solid transparent;
+            border: 1px solid #e0e0e0;
         }
 
         .remessa-item:hover {
             background: #e8f5e9;
+            border-color: #a5d6a7;
         }
 
         .remessa-item.active {
             background: #a5d6a7;
             font-weight: 700;
             border-color: var(--sidebar-header);
+            color: #1b5e20;
         }
 
         .remessa-item .label {
-            font-size: 0.75rem;
-            color: var(--text-dark);
+            font-size: 0.78rem;
             word-break: break-all;
         }
 
@@ -214,15 +256,8 @@
             color: #fff;
         }
 
-        .remessa-total {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-top: 8px;
-            border-top: 2px solid #a5d6a7;
-            margin-top: 8px;
-            font-size: 0.78rem;
-            font-weight: 700;
+        .remessa-item.active .badge {
+            background: #1b5e20;
         }
 
         .btn-reset-filters {
@@ -239,6 +274,7 @@
             justify-content: center;
             gap: 8px;
             font-size: 0.82rem;
+            transition: background 0.2s;
         }
 
         .btn-reset-filters:hover {
@@ -253,8 +289,8 @@
             background: var(--sidebar-header);
             color: #fff;
             border: none;
-            width: 40px;
-            height: 40px;
+            width: 38px;
+            height: 38px;
             border-radius: 8px;
             cursor: pointer;
             display: none;
@@ -313,7 +349,7 @@
         .status-dot.faed { background: var(--faed-color); }
         .status-dot.manut { background: var(--manut-color); }
 
-        /* TABs */
+        /* TABs DE ABAS DA PLANILHA */
         .tabs-container {
             background: #fff;
             border-bottom: 2px solid var(--border-color);
@@ -348,7 +384,7 @@
             overflow: hidden;
         }
 
-        /* TABELA */
+        /* TABELA DE DADOS */
         .table-container {
             background: #fff;
             border-radius: 10px;
@@ -385,10 +421,12 @@
         
         .highlight-remessa {
             background: #fff9c4;
-            padding: 2px 6px;
+            padding: 3px 8px;
             border-radius: 4px;
             font-weight: 700;
             color: #333;
+            border: 1px solid #fbc02d;
+            display: inline-block;
         }
     </style>
 </head>
@@ -399,40 +437,67 @@
     </button>
 
     <aside id="sidebar">
+        <!-- CABEÇALHO DO MENU -->
         <div class="sidebar-header">
-            <h2><i class="fa-solid fa-sliders-h"></i> Filtros Painel</h2>
+            <h2><i class="fa-solid fa-sliders-h"></i> Painel de Filtros</h2>
             <button class="btn-toggle-sidebar" onclick="toggleSidebar()">
                 <i class="fa-solid fa-angles-left"></i>
             </button>
         </div>
 
+        <!-- 1. PESQUISA GERAL (TEXTO GLOBAL) -->
+        <div>
+            <div class="filter-section-title">
+                <i class="fa-solid fa-magnifying-glass"></i> Pesquisa Geral
+            </div>
+            <div class="input-group-search">
+                <i class="fa-solid fa-search"></i>
+                <input type="text" id="global-search-input" placeholder="Buscar Escola, Diretor, ID..." oninput="renderTable()">
+            </div>
+        </div>
+
+        <!-- 2. CARDS DE RESUMO DA ABA ATIVA -->
+        <div>
+            <div class="filter-section-title">
+                <i class="fa-solid fa-chart-pie"></i> Resumo Geral
+            </div>
+            <div class="cards-grid">
+                <div class="card-stat">
+                    <span class="card-title">Total Linhas</span>
+                    <span class="card-value" id="card-total-linhas">0</span>
+                </div>
+                <div class="card-stat">
+                    <span class="card-title">Remessas</span>
+                    <span class="card-value" id="card-total-remessas">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. PAINEL / LISTA DE VALIDAÇÃO DE REMESSAS -->
         <div class="remessa-section">
             <div class="remessa-header">
-                <div class="section-title">
-                    <i class="fa-solid fa-clipboard-list"></i>
-                    Validação Remessa
+                <div class="filter-section-title" style="margin: 0;">
+                    <i class="fa-solid fa-clipboard-check"></i> Validação Remessa
                     <span class="panel-indicator" id="remessa-panel-indicator">PNAE</span>
                 </div>
                 <span class="badge-count" id="remessa-badge-count">0</span>
             </div>
             
-            <div class="remessa-search">
-                <i class="fa-solid fa-search"></i>
-                <input type="text" id="remessa-search-input" placeholder="Pesquisar (ex: BB DIGITAL)..." oninput="filterRemessaList()">
+            <!-- PESQUISA ESPECÍFICA DE REMESSAS -->
+            <div class="input-group-search">
+                <i class="fa-solid fa-filter"></i>
+                <input type="text" id="remessa-search-input" placeholder="Filtrar remessa (ex: BB DIGITAL)..." oninput="filterRemessaList()">
             </div>
 
+            <!-- LISTA DE REMESSAS COM OCORRÊNCIAS -->
             <div class="remessa-list-container">
                 <div id="remessa-list">
-                    <div style="text-align:center; padding: 10px; font-size: 0.75rem; color: #666;">Carregando dados...</div>
+                    <div style="text-align:center; padding: 10px; font-size: 0.75rem; color: #666;">Carregando...</div>
                 </div>
-            </div>
-
-            <div class="remessa-total">
-                <span>Total Linhas</span>
-                <span id="remessa-total-value">0</span>
             </div>
         </div>
 
+        <!-- BOTÃO PARA LIMPAR TODOS OS FILTROS -->
         <button class="btn-reset-filters" onclick="resetAllFilters()">
             <i class="fa-solid fa-rotate-left"></i> Limpar Filtros
         </button>
@@ -440,22 +505,23 @@
 
     <main>
         <header>
-            <h1><i class="fa-solid fa-table-list"></i> Painel Geradores de Remessa</h1>
+            <h1><i class="fa-solid fa-table-list"></i> Sistema Remessa Web</h1>
             <div class="sheet-status">
                 <div class="status-dot pnae" id="status-dot"></div>
                 <span>Aba Ativa: <strong id="sheet-name">Backup_Remessa_Pnae</strong></span>
             </div>
         </header>
 
+        <!-- NAVEGAÇÃO ENTRE AS ABAS -->
         <div class="tabs-container">
             <button class="tab-btn tab-pnae active" id="btn-pnae" onclick="switchTab('Backup_Remessa_Pnae')">
-                <i class="fas fa-utensils"></i> PNAE
+                <i class="fas fa-utensils"></i> Backup_Remessa_Pnae
             </button>
             <button class="tab-btn tab-faed" id="btn-faed" onclick="switchTab('Backup_Remessa_Faed')">
-                <i class="fas fa-hand-holding-heart"></i> FAED
+                <i class="fas fa-hand-holding-heart"></i> Backup_Remessa_Faed
             </button>
             <button class="tab-btn tab-manut" id="btn-manut" onclick="switchTab('Backup_Remessa_Manut')">
-                <i class="fas fa-tools"></i> Manutenção
+                <i class="fas fa-tools"></i> Backup_Remessa_Manut
             </button>
         </div>
 
@@ -474,21 +540,21 @@
     </main>
 
     <script>
-        // MOCK DE DADOS PARA TESTE LOCAL (Caso rode fora do Google Apps Script)
+        // MOCK PARA TESTE LOCAL
         const LOCAL_MOCK = {
             'Backup_Remessa_Pnae': [
-                ["ColA", "ColB", "ColC", "ColD", "ColE", "Unidade Escolar", "Diretor", "Id Custro", "Cartão", "Valor Orig", "Valor Banco", "Valor Max", "891", "5/11/2026", "parcela alimenta..."],
-                ["ColA", "ColB", "ColC", "ColD", "ColE", "DO DE EDUCACAO BASICA PROFIS", "RAQUEL ALVES", "186241084", "4098690054808459", "21.719,20", "21.720,00", "63.767,00", "BB DIGITAL", "5/26/2026", "parcela alimenta..."],
-                ["ColA", "ColB", "ColC", "ColD", "ColE", "DO DE EDUCACAO BASICA PROFIS", "RAQUEL ALVES", "186241084", "4098690054808459", "21.719,20", "21.720,00", "43.439,00", "897", "6/1/2026", "parcela alimenta..."],
-                ["ColA", "ColB", "ColC", "ColD", "ColE", "ESTADUAL DE TEMPO INTEGRAL", "WN ALMIR OLIVEIRA", "175848753", "4098699679387146", "37.007,20", "37.008,00", "185.516,00", "899", "6/8/2026", "parcela alimenta..."]
+                ["ColA", "ColB", "ColC", "ColD", "ColE", "ESTADUAL INDIGENA NOSSA SENHORA DE LOURDES", "IEZES (PRESIDENTE D)", "175887030", "4098699672243551", "1.243,00", "1.243,00", "4.407,00", "891", "5/11/2026", "parcela alimenta..."],
+                ["ColA", "ColB", "ColC", "ColD", "ColE", "DO DE EDUCACAO BASICA PROFIS E TECNOLOGICA", "RAQUEL ALVES CONC", "186241084", "4098690054808459", "21.719,20", "21.720,00", "63.767,00", "BB DIGITAL", "5/26/2026", "parcela alimenta..."],
+                ["ColA", "ColB", "ColC", "ColD", "ColE", "DO DE EDUCACAO BASICA PROFIS E TECNOLOGICA", "RAQUEL ALVES CONC", "186241084", "4098690054808459", "21.719,20", "21.720,00", "43.439,00", "897", "6/1/2026", "parcela alimenta..."],
+                ["ColA", "ColB", "ColC", "ColD", "ColE", "ESTADUAL DE TEMPO INTEGRAL LOMANTO JUNIOR", "WN ALMIR OLIVEIRA", "175848753", "4098699679387146", "37.007,20", "37.008,00", "185.516,00", "899", "6/8/2026", "parcela alimenta..."]
             ],
             'Backup_Remessa_Faed': [
-                ["ColA", "ColB", "ColC", "ColD", "ColE", "ESCOLA FAED 1", "DIRETOR A", "123", "40986000000", "10.000,00", "10.000,00", "20.000,00", "FAED-2026", "6/1/2026", "parcela..."],
-                ["ColA", "ColB", "ColC", "ColD", "ColE", "ESCOLA FAED 2", "DIRETOR B", "124", "40986000001", "15.000,00", "15.000,00", "30.000,00", "BB DIGITAL", "6/2/2026", "parcela..."]
+                ["ColA", "ColB", "ColC", "ColD", "ColE", "ESCOLA FAED SANTA CRUZ", "DIRETOR MARCOS", "123456", "409860000001", "10.000,00", "10.000,00", "20.000,00", "891", "6/1/2026", "parcela..."],
+                ["ColA", "ColB", "ColC", "ColD", "ColE", "CENTRO DE FORMACAO FAED", "DIRETORA SILVIA", "123457", "409860000002", "15.000,00", "15.000,00", "30.000,00", "BB DIGITAL", "6/2/2026", "parcela..."]
             ],
             'Backup_Remessa_Manut': [
-                ["ColA", "ColB", "ColC", "ColD", "ColE", "ESCOLA MANUT 1", "DIRETOR C", "125", "40986000002", "5.000,00", "5.000,00", "10.000,00", "VAL", "DAT", "MNT-550"],
-                ["ColA", "ColB", "ColC", "ColD", "ColE", "ESCOLA MANUT 2", "DIRETOR D", "126", "40986000003", "8.000,00", "8.000,00", "16.000,00", "VAL", "DAT", "BB DIGITAL"]
+                ["ColA", "ColB", "ColC", "ColD", "ColE", "COL_A", "COL_B", "COL_C", "COL_D", "COL_E", "ESCOLA MANUTENCAO CENTRAL", "DIRETOR CARLOS", "1750001", "40986000003", "BB DIGITAL", "RESGATE", "9157.2026.005574"],
+                ["ColA", "ColB", "ColC", "ColD", "ColE", "COL_A", "COL_B", "COL_C", "COL_D", "COL_E", "COL_MANUT_02", "DIRETORA AMANDA", "1750002", "40986000004", "899", "parcela...", "9157.2026.005575"]
             ]
         };
 
@@ -503,7 +569,7 @@
             btnShow.classList.toggle('visible', sidebar.classList.contains('collapsed'));
         }
 
-        // RETORNA A REMESSA INDEPENDENTE DO TIPO DE DADO (PRESERVA "BB DIGITAL")
+        // EXTRAI A REMESSA SEM DESCARTE DE TEXTOS ("BB DIGITAL")
         function getRemessaFromRow(row, tabName) {
             let val = "";
             if (tabName === 'Backup_Remessa_Pnae' || tabName === 'Backup_Remessa_Faed') {
@@ -521,9 +587,9 @@
         function switchTab(tabName) {
             currentTab = tabName;
             selectedRemessaFilter = null;
+            document.getElementById('global-search-input').value = '';
             document.getElementById('remessa-search-input').value = '';
 
-            // Estilos do Cabeçalho e Botões
             document.getElementById('sheet-name').textContent = tabName;
             const dot = document.getElementById('status-dot');
             const indicator = document.getElementById('remessa-panel-indicator');
@@ -551,7 +617,6 @@
             const tbody = document.getElementById('tbody-painel');
             tbody.innerHTML = `<tr><td colspan="10" style="text-align: center;">Carregando dados da aba ${tabName}...</td></tr>`;
 
-            // Verifica se está dentro do ambiente Apps Script
             if (typeof google !== 'undefined' && google.script && google.script.run) {
                 google.script.run
                     .withSuccessHandler(response => {
@@ -564,18 +629,17 @@
                     })
                     .getDadosAba(tabName);
             } else {
-                // Fallback de teste local
                 setTimeout(() => {
                     rawSheetData = LOCAL_MOCK[tabName] || [];
                     processAndRender();
-                }, 300);
+                }, 200);
             }
         }
 
         function processAndRender() {
             renderHeader(currentTab);
             renderRemessaSidebar(currentTab);
-            renderTable(currentTab);
+            renderTable();
         }
 
         function renderHeader(tabName) {
@@ -586,11 +650,11 @@
                     <tr>
                         <th>Unidade Escolar</th>
                         <th>Diretor(a)</th>
-                        <th>Id Custro</th>
+                        <th>Id Custo</th>
                         <th>Cartão</th>
-                        <th>Valor Original</th>
-                        <th>Valor Banco</th>
                         <th>Remessa (Coluna O)</th>
+                        <th>Finalidade</th>
+                        <th>Processo</th>
                     </tr>
                 `;
             } else {
@@ -599,13 +663,14 @@
                     <tr>
                         <th>Unidade Escolar</th>
                         <th>Diretor(a)</th>
-                        <th>Id Custro</th>
+                        <th>Id Custo</th>
                         <th>Cartão</th>
                         <th>Valor Original</th>
                         <th>Valor Banco</th>
                         <th>Valor Máximo</th>
                         <th>Remessa (Coluna M)</th>
                         <th>Data Remessa</th>
+                        <th>Finalidade</th>
                     </tr>
                 `;
             }
@@ -614,25 +679,30 @@
         function renderRemessaSidebar(tabName) {
             const container = document.getElementById('remessa-list');
             const badgeCount = document.getElementById('remessa-badge-count');
-            const totalValue = document.getElementById('remessa-total-value');
+            const cardTotalLinhas = document.getElementById('card-total-linhas');
+            const cardTotalRemessas = document.getElementById('card-total-remessas');
 
-            // Extrai todos os valores válidos
             const remessas = rawSheetData
                 .map(row => getRemessaFromRow(row, tabName))
-                .filter(val => val !== "" && val !== "Remessa"); // Descarta cabeçalho se houver
+                .filter(val => val !== "" && val !== "Remessa");
+
+            cardTotalLinhas.textContent = remessas.length;
 
             if (remessas.length === 0) {
                 container.innerHTML = `<div style="text-align:center; padding:10px; font-size:0.75rem;">Nenhuma remessa encontrada.</div>`;
                 badgeCount.textContent = '0';
-                totalValue.textContent = '0';
+                cardTotalRemessas.textContent = '0';
                 return;
             }
 
-            // Agrupa as remessas mantendo o valor exato ("BB DIGITAL", "891", etc)
             const contagem = {};
             remessas.forEach(r => {
                 contagem[r] = (contagem[r] || 0) + 1;
             });
+
+            const totalRemessasDistintas = Object.keys(contagem).length;
+            badgeCount.textContent = totalRemessasDistintas;
+            cardTotalRemessas.textContent = totalRemessasDistintas;
 
             let html = '';
             Object.keys(contagem).forEach(remessaKey => {
@@ -646,18 +716,16 @@
             });
 
             container.innerHTML = html;
-            badgeCount.textContent = Object.keys(contagem).length;
-            totalValue.textContent = remessas.length;
         }
 
         function filterByRemessa(remessaKey) {
             if (selectedRemessaFilter === remessaKey) {
-                selectedRemessaFilter = null; // Desativa filtro se clicar nele novamente
+                selectedRemessaFilter = null;
             } else {
                 selectedRemessaFilter = remessaKey;
             }
             renderRemessaSidebar(currentTab);
-            renderTable(currentTab);
+            renderTable();
         }
 
         function filterRemessaList() {
@@ -670,13 +738,21 @@
             });
         }
 
-        function renderTable(tabName) {
+        function renderTable() {
             const tbody = document.getElementById('tbody-painel');
+            const globalQuery = document.getElementById('global-search-input').value.toLowerCase().trim();
             let rows = rawSheetData;
 
-            // Aplica filtro por clique no painel lateral
+            // 1. Filtro por clique na lista de remessas
             if (selectedRemessaFilter !== null) {
-                rows = rows.filter(row => getRemessaFromRow(row, tabName) === selectedRemessaFilter);
+                rows = rows.filter(row => getRemessaFromRow(row, currentTab) === selectedRemessaFilter);
+            }
+
+            // 2. Filtro pela caixa de pesquisa geral
+            if (globalQuery !== '') {
+                rows = rows.filter(row => {
+                    return row.some(cell => String(cell).toLowerCase().includes(globalQuery));
+                });
             }
 
             if (rows.length === 0) {
@@ -686,21 +762,21 @@
 
             let html = '';
             rows.forEach(row => {
-                const remessaVal = getRemessaFromRow(row, tabName);
+                const remessaVal = getRemessaFromRow(row, currentTab);
 
-                // Evita renderizar a linha de cabeçalho da planilha se ela estiver no meio dos dados
+                // Evita repetir linha de cabeçalho
                 if (remessaVal === 'Remessa') return;
 
-                if (tabName === 'Backup_Remessa_Manut') {
+                if (currentTab === 'Backup_Remessa_Manut') {
                     html += `
                         <tr>
-                            <td>${row[5] || ''}</td>
-                            <td>${row[6] || ''}</td>
-                            <td>${row[7] || ''}</td>
-                            <td>${row[8] || ''}</td>
-                            <td>${row[9] || ''}</td>
-                            <td>${row[10] || ''}</td>
+                            <td>${row[10] || row[5] || ''}</td>
+                            <td>${row[11] || row[6] || ''}</td>
+                            <td>${row[12] || row[7] || ''}</td>
+                            <td>${row[13] || row[8] || ''}</td>
                             <td><span class="highlight-remessa">${remessaVal}</span></td>
+                            <td>${row[15] || ''}</td>
+                            <td>${row[16] || ''}</td>
                         </tr>
                     `;
                 } else {
@@ -715,6 +791,7 @@
                             <td>${row[11] || ''}</td>
                             <td><span class="highlight-remessa">${remessaVal}</span></td>
                             <td>${row[13] || ''}</td>
+                            <td>${row[14] || ''}</td>
                         </tr>
                     `;
                 }
@@ -725,12 +802,13 @@
 
         function resetAllFilters() {
             selectedRemessaFilter = null;
+            document.getElementById('global-search-input').value = '';
             document.getElementById('remessa-search-input').value = '';
+            filterRemessaList();
             renderRemessaSidebar(currentTab);
-            renderTable(currentTab);
+            renderTable();
         }
 
-        // Inicializa ao carregar a página
         document.addEventListener('DOMContentLoaded', () => {
             switchTab('Backup_Remessa_Pnae');
         });
