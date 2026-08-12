@@ -174,7 +174,7 @@
             font-size: 0.85rem;
         }
 
-        .btn-reset {
+        .btn-reset-filters {
             width: 100%;
             padding: 9px;
             background: var(--sidebar-header);
@@ -193,8 +193,9 @@
             font-size: 0.82rem;
         }
 
-        .btn-reset:hover {
+        .btn-reset-filters:hover {
             background: #1b5e20;
+            transform: scale(1.02);
         }
 
         .remessa-section {
@@ -984,7 +985,7 @@
             </div>
         </div>
 
-        <button class="btn-reset" onclick="resetFilters()">
+        <button class="btn-reset-filters" onclick="resetAllFilters()">
             <i class="fa-solid fa-rotate-left"></i> Limpar Filtros
         </button>
     </aside>
@@ -1473,7 +1474,6 @@
             });
         }
 
-        // ===== FUNÇÃO PARA ATUALIZAR A LISTA DE REMESSA COM BASE NOS DADOS FILTRADOS =====
         function updateRemessaList(panel) {
             const data = filteredData[panel] || [];
             const remessaCol = getRemessaCol(panel);
@@ -1608,7 +1608,6 @@
                 currentPage[panel] = 1;
                 renderPage(panel);
                 
-                // ===== ATUALIZA A LISTA DE REMESSA COM OS DADOS FILTRADOS =====
                 updateRemessaList(panel);
 
                 isProcessing = false;
@@ -1671,18 +1670,31 @@
             }
         }
 
-        function resetFilters() {
+        // ===== FUNÇÃO CORRIGIDA DE LIMPAR FILTROS =====
+        function resetAllFilters() {
+            // Limpar selects
             document.getElementById('filter-nte').value = '';
+            document.getElementById('filter-municipio').value = '';
             document.getElementById('filter-tipo-valor').value = 'todos';
+            
+            // Limpar inputs de pesquisa
             document.querySelectorAll('.search-input').forEach(input => input.value = '');
+            
+            // Limpar pesquisa da remessa
             document.getElementById('remessa-search-input').value = '';
             
+            // Limpar seleção de remessa
             selectedRemessa = null;
             document.querySelectorAll('.remessa-item').forEach(el => el.classList.remove('active'));
             
+            // Atualizar dropdown de municípios
             updateMunicipioDropdown();
-            filterRemessaList();
+            
+            // Aplicar filtros (isso vai recarregar a tabela e a lista de remessa)
             applyFilters(currentTab);
+            
+            // Limpar filtro de pesquisa da lista de remessa
+            filterRemessaList();
         }
     </script>
 </body>
