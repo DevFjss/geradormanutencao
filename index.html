@@ -135,9 +135,40 @@
             transition: all 0.2s;
         }
 
-        .filter-group select:focus {
+        .filter-group select:focus,
+        .filter-group input:focus {
             border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.15);
+        }
+
+        .search-input-wrapper {
+            position: relative;
+        }
+
+        .search-input-wrapper input {
+            width: 100%;
+            padding: 7px 12px 7px 34px;
+            border: 1px solid #c8e6c9;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            outline: none;
+            transition: all 0.2s;
+            background: #fafbfc;
+        }
+
+        .search-input-wrapper input:focus {
+            border-color: var(--primary);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+        }
+
+        .search-input-wrapper i {
+            position: absolute;
+            left: 11px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 0.85rem;
         }
 
         .btn-reset {
@@ -276,7 +307,7 @@
         }
 
         .remessa-list-container {
-            max-height: 250px;
+            max-height: 180px;
             overflow-y: auto;
         }
 
@@ -298,9 +329,9 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 5px 8px;
+            padding: 4px 8px;
             border-radius: 6px;
-            margin-bottom: 3px;
+            margin-bottom: 2px;
             background: #f8fbf8;
             transition: all 0.2s;
             cursor: pointer;
@@ -316,14 +347,14 @@
         }
 
         .remessa-item .label {
-            font-size: 0.75rem;
+            font-size: 0.73rem;
             font-weight: 500;
             color: var(--text-dark);
             word-break: break-all;
         }
 
         .remessa-item .badge {
-            font-size: 0.65rem;
+            font-size: 0.6rem;
             font-weight: 700;
             padding: 2px 10px;
             border-radius: 12px;
@@ -345,16 +376,6 @@
 
         .remessa-item .badge.success {
             background: var(--success);
-        }
-
-        .remessa-item .badge.secondary {
-            background: #6c757d;
-        }
-
-        .remessa-divider {
-            height: 1px;
-            background: #c8e6c9;
-            margin: 4px 0;
         }
 
         .remessa-total {
@@ -483,7 +504,7 @@
         /* ===== CAIXAS DE PESQUISA ===== */
         .search-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr 1fr 1fr;
             gap: 14px;
             flex-shrink: 0;
         }
@@ -510,34 +531,8 @@
             color: var(--primary);
         }
 
-        .search-input-wrapper {
-            position: relative;
-        }
-
-        .search-input-wrapper input {
-            width: 100%;
+        .search-card .search-input-wrapper input {
             padding: 7px 12px 7px 34px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            font-size: 0.82rem;
-            outline: none;
-            transition: all 0.2s;
-            background: #fafbfc;
-        }
-
-        .search-input-wrapper input:focus {
-            border-color: var(--primary);
-            background: #fff;
-            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
-        }
-
-        .search-input-wrapper i {
-            position: absolute;
-            left: 11px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-muted);
-            font-size: 0.85rem;
         }
 
         /* ===== CARDS RESUMO ===== */
@@ -813,6 +808,10 @@
             font-weight: 600;
         }
 
+        @media (max-width: 1100px) {
+            .search-grid { grid-template-columns: 1fr 1fr; }
+        }
+
         @media (max-width: 900px) {
             .search-grid { grid-template-columns: 1fr; }
             .metrics-grid { grid-template-columns: repeat(2, 1fr); }
@@ -937,6 +936,14 @@
                         <input type="text" id="search-cartao" placeholder="Digite o nº do Cartão...">
                     </div>
                 </div>
+
+                <div class="search-card">
+                    <h3><i class="fa-solid fa-user-tie"></i> Diretor(a) (Coluna G)</h3>
+                    <div class="search-input-wrapper">
+                        <i class="fa-solid fa-user"></i>
+                        <input type="text" id="search-diretor" placeholder="Digite o nome do Diretor(a)...">
+                    </div>
+                </div>
             </div>
 
             <!-- CARDS RESUMO -->
@@ -1032,6 +1039,7 @@
         const IDX_NTE = 0;
         const IDX_MUNICIPIO = 1;
         const IDX_COD_SEC = 2;
+        const IDX_DIRETOR = 6;      // Coluna G (0-based: 6)
         const IDX_CARTAO = 8;
         const IDX_VALOR_CUSTEIO = 12;
         const IDX_VALOR_CAPITAL = 13;
@@ -1059,11 +1067,13 @@
 
             const searchSec = document.getElementById('search-cod-sec');
             const searchCartao = document.getElementById('search-cartao');
+            const searchDiretor = document.getElementById('search-diretor');
             
             const debouncedApply = debounce(applyFilters, DEBOUNCE_DELAY);
             
             searchSec.addEventListener('input', debouncedApply);
             searchCartao.addEventListener('input', debouncedApply);
+            searchDiretor.addEventListener('input', debouncedApply);
 
             document.getElementById('filter-nte').addEventListener('change', () => {
                 updateMunicipioDropdown();
@@ -1301,7 +1311,6 @@
                 selectedRemessa = value;
             }
             
-            // Atualizar visual
             document.querySelectorAll('.remessa-item').forEach(el => {
                 el.classList.toggle('active', el.dataset.value === selectedRemessa);
             });
@@ -1324,6 +1333,7 @@
                     const tipoValorVal = document.getElementById('filter-tipo-valor').value;
                     const searchCodSec = document.getElementById('search-cod-sec').value.trim().toLowerCase();
                     const searchCartao = document.getElementById('search-cartao').value.trim().toLowerCase();
+                    const searchDiretor = document.getElementById('search-diretor').value.trim().toLowerCase();
 
                     let totalCusteio = 0;
                     let totalCapital = 0;
@@ -1334,6 +1344,7 @@
                         const muni = row[IDX_MUNICIPIO] ? row[IDX_MUNICIPIO].toString().trim().toLowerCase() : '';
                         const codSec = row[IDX_COD_SEC] ? row[IDX_COD_SEC].toString().trim().toLowerCase() : '';
                         const cartao = row[IDX_CARTAO] ? row[IDX_CARTAO].toString().trim().toLowerCase() : '';
+                        const diretor = row[IDX_DIRETOR] ? row[IDX_DIRETOR].toString().trim().toLowerCase() : '';
                         const remessa = row[IDX_REMESSA] ? row[IDX_REMESSA].toString().trim() : '';
 
                         const custeio = parseFloat(row[IDX_VALOR_CUSTEIO]) || 0;
@@ -1343,13 +1354,14 @@
                         const matchMuni = !muniVal || muni === muniVal;
                         const matchCodSec = !searchCodSec || codSec.includes(searchCodSec);
                         const matchCartao = !searchCartao || cartao.includes(searchCartao);
+                        const matchDiretor = !searchDiretor || diretor.includes(searchDiretor);
                         const matchRemessa = !selectedRemessa || remessa === selectedRemessa;
 
                         let matchTipoValor = true;
                         if (tipoValorVal === 'custeio') matchTipoValor = custeio > 0;
                         if (tipoValorVal === 'capital') matchTipoValor = capital > 0;
 
-                        const match = matchNte && matchMuni && matchCodSec && matchCartao && matchRemessa && matchTipoValor;
+                        const match = matchNte && matchMuni && matchCodSec && matchCartao && matchDiretor && matchRemessa && matchTipoValor;
                         
                         if (match) {
                             totalCusteio += custeio;
@@ -1438,6 +1450,7 @@
             document.getElementById('filter-tipo-valor').value = 'todos';
             document.getElementById('search-cod-sec').value = '';
             document.getElementById('search-cartao').value = '';
+            document.getElementById('search-diretor').value = '';
             document.getElementById('remessa-search-input').value = '';
             
             selectedRemessa = null;
