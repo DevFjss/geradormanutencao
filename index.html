@@ -1251,7 +1251,7 @@
                 finalidadeCol: 14,
                 dataRemessaCol: 13,     // Coluna N
                 dataOutraCol: 17,       // Coluna R
-                colunaTNumero: null,    // Não tem coluna T no PNAE
+                colunaTNumero: null,
                 hasCusteioCapital: true
             },
             faed: {
@@ -1264,7 +1264,7 @@
                 finalidadeCol: 14,
                 dataRemessaCol: 13,     // Coluna N
                 dataOutraCol: 17,       // Coluna R
-                colunaTNumero: null,    // Não tem coluna T no FAED
+                colunaTNumero: null,
                 hasCusteioCapital: true
             },
             manut: {
@@ -1278,7 +1278,7 @@
                 finalidadeCol: 16,
                 dataRemessaCol: 15,     // Coluna P
                 dataOutraCol: 23,       // Coluna X
-                colunaTNumero: 19,      // Coluna T - é número
+                colunaTNumero: 19,      // Coluna T
                 hasCusteioCapital: true
             }
         };
@@ -1303,7 +1303,6 @@
         const IDX_COD_SEC = 2;
         const IDX_CARTAO = 8;
 
-        // Colunas que são números (não devem ser formatadas como moeda)
         const NUMERIC_COLUMNS = [0, 2, 3, 4, 8, 12, 13, 14, 19];
 
         function debounce(func, delay) {
@@ -1346,25 +1345,21 @@
             return NUMERIC_COLUMNS.includes(colIdx);
         }
 
-        // ===== FORMATAÇÃO DE DATA =====
+        // ===== FORMATAÇÃO DE DATA CORRIGIDA =====
         function formatDate(value) {
             if (!value && value !== 0) return '';
             
-            // Se for número (timestamp do Google Sheets - dias desde 30/12/1899)
-            if (typeof value === 'number' && value > 0) {
-                // Data do Google Sheets
-                const date = new Date((value - 25569) * 86400 * 1000);
-                if (!isNaN(date.getTime())) {
-                    const day = String(date.getDate()).padStart(2, '0');
-                    const month = String(date.getMonth() + 1).padStart(2, '0');
-                    const year = date.getFullYear();
+            // Se for uma string no formato "Date(2026,0,14)" do Google Sheets
+            if (typeof value === 'string') {
+                const match = value.match(/Date\((\d+),(\d+),(\d+)\)/);
+                if (match) {
+                    const year = match[1];
+                    const month = String(parseInt(match[2]) + 1).padStart(2, '0');
+                    const day = String(match[3]).padStart(2, '0');
                     return `${day}/${month}/${year}`;
                 }
-            }
-            
-            // Se for string, tenta converter
-            if (typeof value === 'string') {
-                // Tenta parsear como data
+                
+                // Se for uma data no formato ISO
                 const date = new Date(value);
                 if (!isNaN(date.getTime())) {
                     const day = String(date.getDate()).padStart(2, '0');
@@ -1372,23 +1367,18 @@
                     const year = date.getFullYear();
                     return `${day}/${month}/${year}`;
                 }
-                // Se for uma string no formato "Data(2026,0,14)" do Google Sheets
-                const match = value.match(/Data\((\d+),(\d+),(\d+)\)/);
-                if (match) {
-                    const year = match[1];
-                    const month = String(parseInt(match[2]) + 1).padStart(2, '0');
-                    const day = String(match[3]).padStart(2, '0');
-                    return `${day}/${month}/${year}`;
-                }
-                // Se for uma data no formato "2026-01-14" ou similar
-                const date2 = new Date(value);
-                if (!isNaN(date2.getTime())) {
-                    const day = String(date2.getDate()).padStart(2, '0');
-                    const month = String(date2.getMonth() + 1).padStart(2, '0');
-                    const year = date2.getFullYear();
-                    return `${day}/${month}/${year}`;
-                }
                 return value;
+            }
+            
+            // Se for número (timestamp do Google Sheets - dias desde 30/12/1899)
+            if (typeof value === 'number' && value > 0) {
+                const date = new Date((value - 25569) * 86400 * 1000);
+                if (!isNaN(date.getTime())) {
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const year = date.getFullYear();
+                    return `${day}/${month}/${year}`;
+                }
             }
             
             return value;
@@ -1899,7 +1889,7 @@
                     if (visibleColumns[panel][colIdx]) {
                         const td = document.createElement('td');
                         
-                        // Verifica se é coluna de data
+                        // Verifica se é coluna de data (N, R, P, X)
                         if (colIdx === dataRemessaCol || colIdx === dataOutraCol) {
                             td.textContent = formatDate(cellVal);
                         } 
