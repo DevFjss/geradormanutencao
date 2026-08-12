@@ -1491,8 +1491,9 @@
                     
                     allData[panel] = json.table.rows.map(row => {
                         return row.c.map(cell => {
-                            // Verifica se o valor existe
-                            if (cell && cell.v !== null && cell.v !== undefined) {
+                            if (!cell) return '';
+                            // Verifica se o valor bruto (v) existe
+                            if (cell.v !== null && cell.v !== undefined) {
                                 // Se for string, mantém como string
                                 if (typeof cell.v === 'string') {
                                     return cell.v;
@@ -1503,6 +1504,14 @@
                                 }
                                 // Outros tipos, converte para string
                                 return String(cell.v);
+                            }
+                            // FALLBACK: quando v é null/undefined, a coluna foi inferida
+                            // pelo Google Sheets como numérica (ex: coluna de Remessa com
+                            // maioria de números), mas esta célula contém texto (ex: "BBDIGITAL").
+                            // Nesse caso o gviz devolve v:null e guarda o texto em f (valor formatado).
+                            // Usamos f como fallback para não perder esses valores textuais.
+                            if (cell.f !== null && cell.f !== undefined && cell.f !== '') {
+                                return cell.f;
                             }
                             return '';
                         });
