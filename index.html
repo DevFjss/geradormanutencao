@@ -241,6 +241,15 @@
             font-size: 0.9rem;
         }
 
+        .remessa-header .section-title .panel-indicator {
+            font-size: 0.6rem;
+            background: var(--sidebar-header);
+            color: #fff;
+            padding: 1px 8px;
+            border-radius: 10px;
+            font-weight: 700;
+        }
+
         .remessa-toggle-btn {
             background: transparent;
             border: none;
@@ -966,6 +975,7 @@
                 <div class="section-title">
                     <i class="fa-solid fa-clipboard-list"></i>
                     Validação Remessa
+                    <span class="panel-indicator" id="remessa-panel-indicator">MANUT</span>
                 </div>
                 <button class="remessa-toggle-btn" id="remessa-toggle-btn">
                     <span class="badge-count" id="remessa-badge-count">0</span>
@@ -1193,19 +1203,22 @@
                 sheet: 'Backup_Remessa_Pnae',
                 color: '#1565C0',
                 name: 'PNAE',
-                icon: 'fa-utensils'
+                icon: 'fa-utensils',
+                remessaCol: 12  // Coluna M (0-based)
             },
             faed: {
                 sheet: 'Backup_Remessa_Faed',
                 color: '#E65100',
                 name: 'FAED',
-                icon: 'fa-hand-holding-heart'
+                icon: 'fa-hand-holding-heart',
+                remessaCol: 12  // Coluna M (0-based)
             },
             manut: {
                 sheet: 'Backup_Remessa_Manut',
                 color: '#546E7A',
                 name: 'Manutenção',
-                icon: 'fa-tools'
+                icon: 'fa-tools',
+                remessaCol: 14  // Coluna O (0-based)
             }
         };
 
@@ -1231,7 +1244,6 @@
         const IDX_CARTAO = 8;
         const IDX_VALOR_CUSTEIO = 12;
         const IDX_VALOR_CAPITAL = 13;
-        const IDX_REMESSA = 14;
 
         // ===== FUNÇÕES AUXILIARES =====
         function debounce(func, delay) {
@@ -1242,8 +1254,8 @@
             };
         }
 
-        function getPanelClass(panel) {
-            return panel === 'pnae' ? 'pnae' : panel === 'faed' ? 'faed' : 'manut';
+        function getRemessaCol(panel) {
+            return PANELS[panel]?.remessaCol || 14;
         }
 
         // ===== INICIALIZAÇÃO =====
@@ -1320,6 +1332,11 @@
             const dot = document.getElementById('status-dot');
             dot.className = `status-dot ${tab}`;
             
+            // Atualizar indicador da remessa
+            const indicator = document.getElementById('remessa-panel-indicator');
+            indicator.textContent = tab.toUpperCase();
+            indicator.style.background = panelInfo.color;
+            
             // Atualizar remessa
             buildRemessaList();
         }
@@ -1348,7 +1365,6 @@
                     if (panel === 'manut') {
                         populateNteDropdown();
                         updateMunicipioDropdown();
-                        buildRemessaList();
                     }
                     
                     renderHeader(panel);
@@ -1361,6 +1377,11 @@
                     if (loading) loading.style.display = 'none';
                     if (table) table.style.display = 'table';
                     if (pagination) pagination.style.display = 'flex';
+                    
+                    // Construir remessa para o painel atual
+                    if (panel === currentTab) {
+                        buildRemessaList();
+                    }
                 })
                 .catch(err => {
                     console.error(`Erro ao carregar ${panel}:`, err);
@@ -1488,11 +1509,14 @@
 
         // ===== BUILD REMESSA LIST =====
         function buildRemessaList() {
+            const panel = currentTab;
+            const data = allData[panel] || [];
+            const remessaCol = getRemessaCol(panel);
+            
             remessaData = {};
-            const data = allData.manut || [];
             
             data.forEach(row => {
-                const remessaVal = row[IDX_REMESSA] ? row[IDX_REMESSA].toString().trim() : '';
+                const remessaVal = row[remessaCol] ? row[remessaCol].toString().trim() : '';
                 if (remessaVal !== '') {
                     remessaData[remessaVal] = (remessaData[remessaVal] || 0) + 1;
                 }
@@ -1506,7 +1530,7 @@
             document.getElementById('remessa-total-value').textContent = totalItems;
             
             if (sortedKeys.length === 0) {
-                remessaList.innerHTML = `<div class="remessa-empty">Nenhum dado na coluna O</div>`;
+                remessaList.innerHTML = `<div class="remessa-empty">Nenhum dado na coluna ${String.fromCharCode(65 + remessaCol)}</div>`;
                 return;
             }
 
@@ -1557,6 +1581,7 @@
                 const nteVal = document.getElementById('filter-nte').value;
                 const muniVal = document.getElementById('filter-municipio').value.toLowerCase();
                 const tipoValorVal = document.getElementById('filter-tipo-valor').value;
+                const remessaCol = getRemessaCol(panel);
                 
                 const searchInputs = document.querySelectorAll(`.search-input[data-panel="${panel}"]`);
                 const searchCodSec = searchInputs[0]?.value.trim().toLowerCase() || '';
@@ -1571,7 +1596,7 @@
                     const muni = row[IDX_MUNICIPIO] ? row[IDX_MUNICIPIO].toString().trim().toLowerCase() : '';
                     const codSec = row[IDX_COD_SEC] ? row[IDX_COD_SEC].toString().trim().toLowerCase() : '';
                     const cartao = row[IDX_CARTAO] ? row[IDX_CARTAO].toString().trim().toLowerCase() : '';
-                    const remessa = row[IDX_REMESSA] ? row[IDX_REMESSA].toString().trim() : '';
+                    const remessa = row[remessaCol] ? row[remessaCol].toString().trim() : '';
 
                     const custeio = parseFloat(row[IDX_VALOR_CUSTEIO]) || 0;
                     const capital = parseFloat(row[IDX_VALOR_CAPITAL]) || 0;
