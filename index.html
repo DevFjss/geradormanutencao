@@ -752,7 +752,6 @@
             color: var(--text-dark);
         }
 
-        /* ===== TABELA ===== */
         .table-container {
             background: #fff;
             border-radius: 10px;
@@ -1249,9 +1248,10 @@
                 remessaCol: 12,
                 valorCusteioCol: 11,
                 finalidadeCol: 14,
-                dataRemessaCol: 13,     // Coluna N
-                dataOutraCol: 17,       // Coluna R
+                dataRemessaCol: 13,
+                dataOutraCol: 17,
                 colunaTNumero: null,
+                valorColunas: [11],
                 hasCusteioCapital: true
             },
             faed: {
@@ -1262,9 +1262,10 @@
                 remessaCol: 12,
                 valorCusteioCol: 11,
                 finalidadeCol: 14,
-                dataRemessaCol: 13,     // Coluna N
-                dataOutraCol: 17,       // Coluna R
+                dataRemessaCol: 13,
+                dataOutraCol: 17,
                 colunaTNumero: null,
+                valorColunas: [11],
                 hasCusteioCapital: true
             },
             manut: {
@@ -1276,9 +1277,10 @@
                 valorCusteioCol: 12,
                 valorCapitalCol: 13,
                 finalidadeCol: 16,
-                dataRemessaCol: 15,     // Coluna P
-                dataOutraCol: 23,       // Coluna X
-                colunaTNumero: 19,      // Coluna T
+                dataRemessaCol: 15,
+                dataOutraCol: 23,
+                colunaTNumero: 19,
+                valorColunas: [12, 13], // Colunas M e N são valores monetários
                 hasCusteioCapital: true
             }
         };
@@ -1341,15 +1343,22 @@
             return PANELS[panel]?.colunaTNumero || null;
         }
 
+        function getValorColunas(panel) {
+            return PANELS[panel]?.valorColunas || [];
+        }
+
         function isNumericColumn(colIdx) {
             return NUMERIC_COLUMNS.includes(colIdx);
         }
 
-        // ===== FORMATAÇÃO DE DATA CORRIGIDA =====
+        function isValorColumn(panel, colIdx) {
+            return getValorColunas(panel).includes(colIdx);
+        }
+
+        // ===== FORMATAÇÃO DE DATA =====
         function formatDate(value) {
             if (!value && value !== 0) return '';
             
-            // Se for uma string no formato "Date(2026,0,14)" do Google Sheets
             if (typeof value === 'string') {
                 const match = value.match(/Date\((\d+),(\d+),(\d+)\)/);
                 if (match) {
@@ -1359,7 +1368,6 @@
                     return `${day}/${month}/${year}`;
                 }
                 
-                // Se for uma data no formato ISO
                 const date = new Date(value);
                 if (!isNaN(date.getTime())) {
                     const day = String(date.getDate()).padStart(2, '0');
@@ -1370,7 +1378,6 @@
                 return value;
             }
             
-            // Se for número (timestamp do Google Sheets - dias desde 30/12/1899)
             if (typeof value === 'number' && value > 0) {
                 const date = new Date((value - 25569) * 86400 * 1000);
                 if (!isNaN(date.getTime())) {
@@ -1382,6 +1389,19 @@
             }
             
             return value;
+        }
+
+        // ===== FORMATAÇÃO DE VALOR MONETÁRIO =====
+        function formatCurrency(value) {
+            if (value === null || value === undefined || value === '') return '';
+            const num = parseFloat(value);
+            if (isNaN(num)) return value;
+            return num.toLocaleString('pt-BR', { 
+                style: 'currency', 
+                currency: 'BRL',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -1882,6 +1902,7 @@
             const dataRemessaCol = getDataRemessaCol(panel);
             const dataOutraCol = getDataOutraCol(panel);
             const colunaTNumero = getColunaTNumero(panel);
+            const valorColunas = getValorColunas(panel);
 
             pageData.forEach(row => {
                 const tr = document.createElement('tr');
@@ -1893,6 +1914,10 @@
                         if (colIdx === dataRemessaCol || colIdx === dataOutraCol) {
                             td.textContent = formatDate(cellVal);
                         } 
+                        // Verifica se é coluna de valor monetário (M e N da Manut)
+                        else if (valorColunas.includes(colIdx)) {
+                            td.textContent = formatCurrency(cellVal);
+                        }
                         // Verifica se é a coluna T da Manutenção (número)
                         else if (colIdx === colunaTNumero) {
                             td.textContent = cellVal !== null && cellVal !== undefined ? cellVal : '';
@@ -1900,10 +1925,6 @@
                         // Verifica se é coluna numérica (NTE, códigos, etc.)
                         else if (isNumericColumn(colIdx)) {
                             td.textContent = cellVal !== null && cellVal !== undefined ? cellVal : '';
-                        } 
-                        // Verifica se é valor monetário
-                        else if (typeof cellVal === 'number' && cellVal > 0) {
-                            td.textContent = cellVal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                         } 
                         // Texto normal
                         else {
